@@ -6,7 +6,7 @@ Controller for common modelmesh-serving component
 
 ## Getting Started
 
-Please see our [getting started documentation](./docs/install/index.md) for details of how to obtain, install and use Model-Mesh Serving.
+Please see our [getting started documentation](./docs/install/install-script.md) for details of how to obtain, install and use Model-Mesh Serving.
 
 For help, please open an issue in this repository.
 

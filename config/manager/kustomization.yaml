@@ -16,7 +16,6 @@ resources:
 
 images:
   - name: modelmesh-controller
-    newName: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/wmlserving-controller
+    newName: pvaneckw/mm-controller
     ## NOTE THIS SHOULD BE REPLACED WITH LATEST CONTROLLER IMAGE TAG
-    newTag: 0.5.1-main_20210701-201
-    digest: sha256:addd6e7df33151460148340e516939c44b1bd0526cb0e942f969a8f964cd12fb
+    newTag: v01

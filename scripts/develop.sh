@@ -27,7 +27,7 @@ usage() {
   exit 1
 }
 
-ARTIFACTORY_REGISTRY="wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com"
+ARTIFACTORY_REGISTRY="kserve"
 PARAMS=""
 CONTROLLER_IMG="wmlserving-controller"
 

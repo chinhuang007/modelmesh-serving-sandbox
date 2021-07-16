@@ -26,7 +26,5 @@ spec:
 
 Notes:
 
-- Prior to version `0.3.0`, please use `apiVersion: ai.ibm.com/v1alpha1` in the Predictor yaml
-- Prior to version `0.5.0`, please use `apiVersion: wmlserving.ai.ibm.com/v1alpha1` in the Predictor yaml
-- `runtime` is optional. If included, the model will be loaded/served using the `ServingRuntime` with the specified name, and the predictors `modelType` must match an entry in that runtime's `supportedModels` list (see [runtimes](../runtimes))
+- `runtime` is optional. If included, the model will be loaded/served using the `ServingRuntime` with the specified name, and the predictors `modelType` must match an entry in that runtime's `supportedModels` list (see [runtimes](../runtimes.md))
 - The CRD contains additional fields but they have been omitted here for now since they are not yet fully supported

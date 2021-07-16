@@ -8,21 +8,21 @@ You will need access to an S3-compatible object storage, for example [MinIO](htt
 
 A set of example models are shared via an IBM Cloud COS instance to use when getting started with Model-Mesh Serving and experimenting with the provided runtimes. Access to this COS instance needs to be set up in the `storage-config` secret.
 
-For the shared COS instance, the `secretKey` to access the models is `wml-serving-example-models`. If you used the `--quickstart` option of the install script, the `secretKey` to use for the local MinIO storage instance is `localMinIO`. If you use a different key value, be sure to update the `spec.storage.s3.secretKey` value in the Predictor.
+For the shared COS instance, the `secretKey` to access the models is `modelmesh-example-models`. If you used the `--quickstart` option of the install script, the `secretKey` to use for the local MinIO storage instance is `localMinIO`. If you use a different key value, be sure to update the `spec.storage.s3.secretKey` value in the Predictor.
 
 It should look something like:
 
 ```shell
 $ kubectl describe secret storage-config
 Name:         storage-config
-Namespace:    wml-serving
+Namespace:    modelmesh
 Labels:       indigo-service=all
 Annotations:
 Type:         Opaque
 
 Data
 ====
-wml-serving-example-models:  308 bytes
+modelmesh-example-models:  308 bytes
 ```
 
 If you installed Model-Mesh Serving using the operator, you will have to configure the `storage-config` secret for access:

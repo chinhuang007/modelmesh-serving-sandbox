@@ -15,46 +15,26 @@
 
 # Install Model-Mesh Serving CRDs, controller, and built-in runtimes into specified Kubernetes namespaces.
 # Expect cluster-admin authority and Kube cluster access to be configured prior to running.
-# Optional env vars (can also be passed as flags): ARTIFACTORY_USER, ARTIFACTORY_APIKEY
 
 set -Eeuo pipefail
 
-base_artifactory_path="https://na.artifactory.swg-devops.com/artifactory"
-artifactory_model_serve_path="wcp-ai-foundation-team-generic-virtual/model-serving"
-artifactory_user="${ARTIFACTORY_USER:-}"
-artifactory_apikey="${ARTIFACTORY_APIKEY:-}"
-redsonja_apikey="${REDSONJA_APIKEY:-}"
-model_serve_version=REPLACE
-install_local_path=
 namespace=
 delete=false
 quickstart=false
-redsonja_images=false
 
 function showHelp() {
   echo "usage: $0 [flags]"
   echo
   echo "Flags:"
   echo "  -n, --namespace                (required) Kubernetes namespace to deploy Model-Mesh Serving to."
-  echo "  -u, --artifactory-user         Artifactory username to pull Model-Mesh Serving tarfile and images, can also set with env var ARTIFACTORY_USER."
-  echo "  -a, --artifactory-apikey       Artifactory API key to pull Model-Mesh Serving tarfile and images, can also set with env var ARTIFACTORY_APIKEY."
-  echo "  -v, --model-serve-version      Model-Mesh Serving version to pull and use. Example: wml-serving-0.3.0_165"
-  echo "  -p, --install-config-path      Path to local model serve installation configs. Can be Model-Mesh Serving tarfile or directory."
   echo "  -d, --delete                   Delete any existing instances of Model-Mesh Serving in Kube namespace before running install, including CRDs, RBACs, controller, older CRD with ai.ibm.com api group name, etc."
   echo "  --quickstart                   Install and configure required supporting datastores in the same namespace (etcd and MinIO) - for experimentation/development"
-  echo "  --redsonja-images              Use images pulled from redsonja IBM Container registry, requires redsonja user and apikey."
-  echo "  --redsonja-apikey              IBM container registry apikey that has access to redsonja account, can also set with env var REDSONJA_APIKEY."
   echo
   echo "Installs Model-Mesh Serving CRDs, controller, and built-in runtimes into specified"
-  echo "Kubernetes namespaces. If a --model-serve-version is given, will try to pull that"
-  echo "version from Artifactory. If local --install-config-path will try to install configs"
-  echo "at that given path. If neither are given, will pull default latest version."
+  echo "Kubernetes namespaces."
   echo
   echo "Expects cluster-admin authority and Kube cluster access to be configured prior to running."
   echo "Also requires Etcd secret 'model-serving-etcd' to be created in namespace already."
-  echo
-  echo "Requires either an Artifactory user and api key or Redsonja user and api key in"
-  echo "a Kube secret named 'ibm-entitlement-key' to pull the necessary images."
 }
 
 die() {
@@ -147,50 +127,15 @@ wait_for_pods_ready() {
   done
 }
 
-replace_artifactory_registry() {
-  local -r filename="$1"
-  local -r artifactory_registry="wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com"
-  local -r redsonja_registry="us.icr.io\/redsonja_hyboria\/ai-foundation"
-
-  if ! [[ -f $filename ]]; then
-    die "File does not exist: $filename, failed to replace artifactory registry with redsonja registry"
-  fi
-
-  perl -pi -e "s/${artifactory_registry}/${redsonja_registry}/g" $filename
-}
-
 while (($# > 0)); do
   case "$1" in
   -h | --h | --he | --hel | --help)
     showHelp
     exit 2
     ;;
-  -a | --a | -apikey | --apikey | -artifactory-apikey | --artifactory-apikey)
-    shift
-    artifactory_apikey="$1"
-    ;;
-  -u | --u | -user | --user | -artifactory-user | --artifactory-user)
-    shift
-    artifactory_user="$1"
-    ;;
-  -redsonja-apikey | --redsonja-apikey)
-    shift
-    redsonja_apikey="$1"
-    ;;
-  -redsonja-images | --redsonja-images)
-    redsonja_images=true
-    ;;
   -n | --n | -namespace | --namespace)
     shift
     namespace="$1"
-    ;;
-  -v | --v | -version | --version | -model-serve-version | --model-serve-version)
-    shift
-    model_serve_version="$1"
-    ;;
-  -p | --p | -install-path | --install-path | -install-config-path | --install-config-path)
-    shift
-    install_local_path="$1"
     ;;
   -d | --d | -delete | --delete)
     delete=true
@@ -223,34 +168,8 @@ fi
 info "Setting kube context to use namespace: $namespace"
 kubectl config set-context --current --namespace="$namespace"
 
-#################      INSTALL Model-Mesh Serving      #################
-# Pull model serving configs if local path not given
-info "Getting Model-Mesh Serving configs"
-if [[ -n $install_local_path ]]; then
-  if [[ -f $install_local_path ]] && [[ $install_local_path =~ \.t?gz$ ]]; then
-    tar -xf "$install_local_path"
-    cd "$(basename "$(basename $install_local_path .tgz)" .tar.gz)"
-  elif [[ -d $install_local_path ]]; then
-    cd "$install_local_path"
-  else
-    die "Could not find provided path to Model-Mesh Serving install configs: $install_local_path"
-  fi
-else
-  # Example version: wml-serving-0.3.0_165 forms URL https://na.artifactory.swg-devops.com/artifactory/wcp-ai-foundation-team-generic-virtual/model-serving/wml-serving-0.3.0_165.tgz
-  echo "Pulling Model-Mesh Serving: ${base_artifactory_path}/${artifactory_model_serve_path}/${model_serve_version}.tgz"
-  if [[ -z $artifactory_user ]] || [[ -z $artifactory_apikey ]]; then
-    die "To pull Model-Mesh Serving tarfile, need to set artifactory user and api key."
-  fi
-
-  curl -sSLf -u "${artifactory_user}:${artifactory_apikey}" -o "${model_serve_version}.tgz" "${base_artifactory_path}/${artifactory_model_serve_path}/${model_serve_version}.tgz"
-  tar -xf "${model_serve_version}.tgz"
-  rm "${model_serve_version}.tgz"
-  cd ${model_serve_version}
-  info "Successfully pulled Model-Mesh Serving configs version: ${model_serve_version}"
-fi
-
 # Ensure the namespace is overridden for all the resources
-cd default
+cd config/default
 kustomize edit set namespace "$namespace"
 cd ..
 
@@ -262,10 +181,6 @@ if [[ $delete == "true" ]]; then
   kustomize build default | kubectl delete -f - --ignore-not-found=true
   kubectl delete -f dependencies/quickstart.yaml --ignore-not-found=true
 fi
-
-# Clean up controller deployments and serviceaccounts with old names, regardless of --delete option
-kubectl delete deployment wmlserving-operator model-serving-controller --ignore-not-found=true
-kubectl delete serviceaccount wmlserving-operator model-serving-controller --ignore-not-found=true
 
 # Quickstart resources
 if [[ $quickstart == "true" ]]; then
@@ -283,38 +198,6 @@ else
   echo "model-serving-etcd secret found"
 fi
 
-if ! kubectl get secret ibm-entitlement-key >/dev/null 2>&1; then
-  # NOTE: users will have to make sure that the ibm-entitlement-key has the correct secret for pulling image
-  if [[ $redsonja_images == "true" ]]; then
-    if [[ -z $redsonja_apikey ]]; then
-      die "Must set redsonja user and api key to create ibm-entitlement-key."
-    fi
-
-    kubectl create secret docker-registry ibm-entitlement-key \
-      --docker-server=us.icr.io \
-      --docker-username="iamapikey" \
-      --docker-password="$redsonja_apikey"
-  else
-    if [[ -z $artifactory_user ]] || [[ -z $artifactory_apikey ]]; then
-      die "Must set Artifactory user and api key to create ibm-entitlement-key."
-    fi
-
-    kubectl create secret docker-registry ibm-entitlement-key \
-      --docker-server=wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com \
-      --docker-username="$artifactory_user" \
-      --docker-password="$artifactory_apikey"
-  fi
-else
-  info "ibm-entitlement-key secret found"
-fi
-
-if [[ $redsonja_images == "true" ]]; then
-  info "Replacing all aritfactory image registries with redsonja"
-  replace_artifactory_registry "manager/kustomization.yaml"
-  replace_artifactory_registry "runtimes/kustomization.yaml"
-  replace_artifactory_registry "default/config-defaults.yaml"
-fi
-
 info "Creating storage-config secret if it does not exist"
 kubectl create -f default/storage-secret.yaml 2>/dev/null || :
 kubectl get secret storage-config
@@ -323,7 +206,7 @@ info "Installing Model-Mesh Serving CRDs, RBACs, and controller"
 kustomize build default | kubectl apply -f -
 
 info "Waiting for Model-Mesh Serving controller pod to be up..."
-wait_for_pods_ready "-l control-plane=wmlserving-controller"
+wait_for_pods_ready "-l control-plane=modelmesh-controller"
 
 info "Installing Model-Mesh Serving built-in runtimes"
 kustomize build runtimes --load-restrictor LoadRestrictionsNone | kubectl apply -f -
