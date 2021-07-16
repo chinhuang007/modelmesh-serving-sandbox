@@ -1,0 +1,17 @@
+domain: ai.ibm.com
+layout: go.kubebuilder.io/v3
+repo: repo: github.com/kserve/modelmesh-serving
+projectName: modelmesh-serving
+resources:
+- crdVersion: v1
+  group: wmlserving
+  kind: ServingRuntime
+  version: v1
+- crdVersion: v1
+  group: wmlserving
+  kind: Predictor
+  version: v1
+version: 3-alpha
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}

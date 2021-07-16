@@ -1,0 +1,6 @@
+model-mesh: 0.0.1-main_20210701-37
+model-serving-runtime-adapter: 0.0.1-main_20210701-76
+seldon-mlserver: 0.3.2_20210709-23
+msp-ml-server: 0.1.0_20210709-14
+wml-serving: 0.5.1-main_20210701-201
+triton-inference-server: 0.20.12_20210709-22

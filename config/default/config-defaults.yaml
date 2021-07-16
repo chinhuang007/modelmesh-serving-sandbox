@@ -1,0 +1,44 @@
+# Copyright 2021 IBM Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# These are the system defaults which users can override with a user config
+# Settings here will be overridden by future product releases and should not
+# be changed unless directed by IBM support
+podsPerRuntime: 2
+headlessService: true
+modelMeshImage:
+  name: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/model-mesh
+  tag: 0.0.1-main_20210701-37
+  digest: sha256:8d1adf997e48d24605ff41698a5c26314dc35ca4403358da2ac146e95d607648
+modelMeshResources:
+  requests:
+    cpu: "300m"
+    memory: "448Mi"
+  limits:
+    cpu: "3"
+    memory: "448Mi"
+storageHelperImage:
+  name: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/model-serving-runtime-adapter
+  tag: 0.0.1-main_20210701-76
+  digest: sha256:dd8e35ec6cd8b2a3cde6ddff4582243df87bc38aa351d21a4380ffdfb76e575f
+  command: ["/opt/app/puller"]
+storageHelperResources:
+  requests:
+    cpu: "50m"
+    memory: "96Mi"
+  limits:
+    cpu: "2"
+    memory: "512Mi"
+serviceAccountName: modelmesh
+metrics:
+  enabled: true

@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2021 IBM Corporation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. -->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <cve>CVE-2020-15106</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <cve>CVE-2020-15112</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <cve>CVE-2020-15113</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <vulnerabilityName>CVE-2020-15114</vulnerabilityName>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <vulnerabilityName>CVE-2020-15136</vulnerabilityName>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/coreos/etcd:3.3.13+incompatible
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/coreos/.*$</packageUrl>
+      <vulnerabilityName>CVE-2020-15115</vulnerabilityName>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/go-units:0.4.0
+
+      Unable to determine if this is applicable. We are at the latest level of this library as of 2020/03/10. Sonatype does not report vulnerabilities at this level.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/go\-units@.*$</packageUrl>
+      <cpe>cpe:/a:docker:docker</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-0047</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-0048</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-5277</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-5278</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-5282</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-8178</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-8179</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-9356</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-9358</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+
+      The required usage of docker for this CVE is not applicable to this product. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2015-3627</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2015-3630</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2014-6407</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2015-3631</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2016-3697</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2016-3697</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2017-14992</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2019-13139</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2019-13509</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2019-15752</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2019-16884</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2019-5736</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2020-27534</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2021-21284</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2021-21285</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2021-21285</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/spdystream:0.0.0-20160310174837-449fdfce4d96
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/spdystream@.*$</packageUrl>
+      <cve>CVE-2021-3162</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/go-sql-driver/mysql:1.4.0
+
+      Although this dependency is referenced in the dependency tree, 
+	  it is not part of the compilation source tree and is not included in the product.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/go\-sql\-driver/mysql@.*$</packageUrl>
+      <cpe>cpe:/a:mysql:mysql</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      The GRPC version mentioned by this CVE precedes the current version
+      ]]></notes>
+      <packageUrl regex="true">^.*$</packageUrl>
+      <cve>CVE-2017-7860</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      The GRPC version mentioned by this CVE precedes the current version
+      ]]></notes>
+      <packageUrl regex="true">^.*$</packageUrl>
+      <cve>CVE-2017-7861</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      The GRPC version mentioned by this CVE precedes the current version
+      ]]></notes>
+      <packageUrl regex="true">^.*$</packageUrl>
+      <cve>CVE-2017-8359</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      The GRPC version mentioned by this CVE precedes the current version
+      ]]></notes>
+      <packageUrl regex="true">^.*$</packageUrl>
+      <cve>CVE-2017-9431</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      The GRPC version mentioned by this CVE precedes the current version
+      ]]></notes>
+      <packageUrl regex="true">^.*$</packageUrl>
+      <cve>CVE-2020-7768</cve>
+   </suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   Consul is an indirect dependency but is not part of the compilation tree
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/hashicorp/consul.*$</packageUrl>
+	   <cpe>cpe:/a:hashicorp:consul</cpe>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: github.com/influxdata/influxdb1-client:0.0.0-20191209144304-8bf82d3c094d
+
+	   CVE applies to influxdb instances, but this project does not use influxdb
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/influxdata/influxdb1\-client@.*$</packageUrl>
+	   <cve>CVE-2018-17572</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: github.com/influxdata/influxdb1-client:0.0.0-20191209144304-8bf82d3c094d
+
+	   CVE applies to influxdb instances, but this project does not use influxdb
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/influxdata/influxdb1\-client@.*$</packageUrl>
+	   <cve>CVE-2019-20933</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: github.com/logrusorgru/aurora:2.0.3+incompatible
+
+	   CVE applies to sql inject to service instances this project does not use
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/logrusorgru/aurora@.*$</packageUrl>
+	   <cve>CVE-2007-6345</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: github.com/prometheus/client_golang:1.9.0
+
+	   The CVE only applies to older levels of prometheus server
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/prometheus.*$</packageUrl>
+	   <cve>CVE-2019-3826</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: go.etcd.io/etcd:0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
+
+	   Not applicable to this level of etcd
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/go\.etcd\.io/etcd@.*$</packageUrl>
+	   <cve>CVE-2020-15106</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: go.etcd.io/etcd:0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
+
+	   Not applicable to this level of etcd
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/go\.etcd\.io/etcd@.*$</packageUrl>
+	   <cve>CVE-2020-15112</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: go.etcd.io/etcd:0.5.0-alpha.5.0.20201125193152-8a03d2e9614b
+
+	   Not applicable to this level of etcd
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/go\.etcd\.io/etcd@.*$</packageUrl>
+	   <cve>CVE-2020-15113</cve>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: sourcegraph.com/sourcegraph/appdash:0.0.0-20190731080439-ebfcffb1b5c0
+	   
+	   Sourcegraph is an indirect dependency but is not in the compilation tree
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/sourcegraph\.com/sourcegraph/appdash@.*$</packageUrl>
+	   <cpe>cpe:/a:sourcegraph:sourcegraph</cpe>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: github.com/matttproud/golang_protobuf_extensions:1.0.1
+
+	   The file containing the CVE is not part of the compiled sources included
+	   in this project
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:golang/github\.com/matttproud/golang_protobuf_extensions@.*$</packageUrl>
+	   <cve>CVE-2021-3121</cve>
+	</suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/miekg/dns:1.0.14
+
+      The specified package is an indirect dependency but is not part of the compilation
+      source tree
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/miekg/dns@.*$</packageUrl>
+      <cve>CVE-2019-19794</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/nats-io/nats-server/v2:2.1.2
+
+      This applies to a running nats server, but this is not present in the possible WmlServing architecture. 
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/nats\-io/nats\-server/v2@.*$</packageUrl>
+      <cve>CVE-2020-28466</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/apache/thrift:0.13.0
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/apache/thrift@.*$</packageUrl>
+      <cve>CVE-2020-13949</cve>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/docker/docker:0.7.3-0.20190327010347-be7ac8be2ae0
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/docker/docker@.*$</packageUrl>
+      <cpe>cpe:/a:docker:docker</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: github.com/nats-io/nats-server/v2:2.1.2
+      ]]></notes>
+      <packageUrl regex="true">^pkg:golang/github\.com/nats\-io/nats\-server/v2@.*$</packageUrl>
+      <cve>CVE-2021-3127</cve>
+   </suppress>
+</suppressions>
