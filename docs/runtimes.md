@@ -200,18 +200,6 @@ spec:
   grpcDataEndpoint: "port:8090"
 ```
 
-<InlineNotification>
-
-**Note**
-
-- Prior to version `0.3.0`, please use `apiVersion: ai.ibm.com/v1alpha1` in the ServingRuntime yaml
-- Prior to version `0.5.0`, please use `apiVersion: wmlserving.ai.ibm.com/v1alpha1` in the ServingRuntime yaml
-
-</InlineNotification>
-
-### Runtime container resource allocations
-
-_TODO_ more detail coming here
 
 ## Integrating with existing model servers
 

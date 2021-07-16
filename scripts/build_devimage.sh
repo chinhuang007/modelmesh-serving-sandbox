@@ -17,7 +17,7 @@ set -euo pipefail
 #shopt -s inherit_errexit
 
 CONTEXT_DIR=devbuild
-IMAGE_NAME=wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/wmlserving-controller-develop
+IMAGE_NAME=kserve/wmlserving-controller-develop
 DEV_DEPS="$0 Dockerfile.develop BASE_IMAGE_TAG go.mod go.sum .pre-commit-config.yaml"
 
 # command is shasum on osx
@@ -35,8 +35,6 @@ else
   BASE_IMAGE_TAG_ARG=$(head -n1 ${CONTEXT_DIR}/BASE_IMAGE_TAG)
   echo "Building dev image ${FULL_IMAGE_NAME} with ${BASE_IMAGE_TAG_ARG}"
   docker build -f ${CONTEXT_DIR}/Dockerfile.develop -t ${FULL_IMAGE_NAME} --build-arg "${BASE_IMAGE_TAG_ARG}" ${CONTEXT_DIR}
-  echo "Pushing dev image ${FULL_IMAGE_NAME}"
-  docker push ${FULL_IMAGE_NAME} || true  ## Continue even if we can't push
 fi
 echo -n "${FULL_IMAGE_NAME}" > .develop_image_name
 

@@ -17,9 +17,8 @@
 podsPerRuntime: 2
 headlessService: true
 modelMeshImage:
-  name: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/model-mesh
-  tag: 0.0.1-main_20210701-37
-  digest: sha256:8d1adf997e48d24605ff41698a5c26314dc35ca4403358da2ac146e95d607648
+  name: pvaneckw/mm
+  tag: v02
 modelMeshResources:
   requests:
     cpu: "300m"
@@ -28,9 +27,8 @@ modelMeshResources:
     cpu: "3"
     memory: "448Mi"
 storageHelperImage:
-  name: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/model-serving-runtime-adapter
-  tag: 0.0.1-main_20210701-76
-  digest: sha256:dd8e35ec6cd8b2a3cde6ddff4582243df87bc38aa351d21a4380ffdfb76e575f
+  name: pvaneckw/mm-adapter
+  tag: v01
   command: ["/opt/app/puller"]
 storageHelperResources:
   requests:

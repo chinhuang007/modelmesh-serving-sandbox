@@ -1,7 +1,7 @@
 ---
 title: Using Model-Mesh Serving
 ---
-
+# Using Model-Mesh Serving
 Trained models are deployed in Model-Mesh Serving via `Predictor`s. These represent a stable service endpoint behind which the underlying model can change.
 
 Models must reside on shared storage. Currently, only S3-based storage is supported but support for other types will follow. Note that model data residing at a particular path within a given storage instance is **assumed to be immutable**. Different versions of the same logical model are treated at the base level as independent models and must reside at different paths. In particular, where a given model server/runtime natively supports the notion of versioning (such as Nvidia Triton, TensorFlow Serving, etc), the provided path should not point to the top of a (pseudo-)directory structure containing multiple versions. Instead, point to the subdirectory which corresponds to a specific version.
@@ -10,7 +10,7 @@ Models must reside on shared storage. Currently, only S3-based storage is suppor
 
 ### Prerequisites
 
-The Model-Mesh Serving instance should be installed in the desired namespace. See [install docs](install) for more details.
+The Model-Mesh Serving instance should be installed in the desired namespace. See [install docs](../install/install-script.md) for more details.
 
 ### Deploy a sample model directly from our shared object storage
 
@@ -18,13 +18,9 @@ The Model-Mesh Serving instance should be installed in the desired namespace. Se
 
 A set of example models are shared via an IBM Cloud COS instance to use when getting started with Model-Mesh Serving and experimenting with the provided runtimes. Access to this COS instance is set up in the `storage-config` secret.
 
-If you used quick start install then there will be a key within the storage-config secret already configured with the name `wml-serving-example-models`. If you installed Model-Mesh Serving using the operator, you will have to configure the `storage-config` secret for access:
+If you used quick start install then there will be a key within the storage-config secret already configured with the name `modelmesh-example-models`.
 
-```shell
-$ kubectl patch secret/storage-config -p '{"data": {"wml-serving-example-models": "ewogICJ0eXBlIjogInMzIiwKICAiYWNjZXNzX2tleV9pZCI6ICJlY2I5ODNmMTE4MjI0MjNjYTllNDg3Zjg5OGQ1NGE4ZiIsCiAgInNlY3JldF9hY2Nlc3Nfa2V5IjogImNkYmVmZjZhMzJhZWY2YzIzNzRhZTY5ZWVmNTAzZTZkZDBjOTNkNmE3NGJjMjQ2NyIsCiAgImVuZHBvaW50X3VybCI6ICJodHRwczovL3MzLnVzLXNvdXRoLmNsb3VkLW9iamVjdC1zdG9yYWdlLmFwcGRvbWFpbi5jbG91ZCIsCiAgInJlZ2lvbiI6ICJ1cy1zb3V0aCIsCiAgImRlZmF1bHRfYnVja2V0IjogIndtbC1zZXJ2aW5nLWV4YW1wbGUtbW9kZWxzLXB1YmxpYyIKfQo="}}'
-```
-
-For reference the contents of the secret value for the `wml-serving-example-models` entry looks like:
+For reference the contents of the secret value for the `modelmesh-example-models` entry looks like:
 
 ```json
 {
@@ -33,7 +29,7 @@ For reference the contents of the secret value for the `wml-serving-example-mode
   "secret_access_key": "cdbeff6a32aef6c2374ae69eef503e6dd0c93d6a74bc2467",
   "endpoint_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud",
   "region": "us-south",
-  "default_bucket": "wml-serving-example-models-public"
+  "default_bucket": "modelmesh-example-models-public"
 }
 ```
 
@@ -43,7 +39,7 @@ For reference the contents of the secret value for the `wml-serving-example-mode
 
 </InlineNotification>
 
-For more details of configuring model storage, see the [Setup Storage](/predictors/setup-storage) page.
+For more details of configuring model storage, see the [Setup Storage](setup-storage.md) page.
 
 2. Create a Predictor Custom Resource to serve the sample model
 
@@ -64,14 +60,14 @@ spec:
   path: sklearn/mnist-svm.joblib
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: modelmesh-example-models
 EOF
 predictor.wmlserving.ai.ibm.com/example-mnist-predictor created
 ```
 
-Note that `wml-serving-example-models` is the name of the secret key created/verified in the previous step.
+Note that `modelmesh-example-models` is the name of the secret key created/verified in the previous step.
 
-For more details go to the [Predictor Spec page](/predictors/predictor-spec).
+For more details go to the [Predictor Spec page](predictor-spec.md).
 
 Once the `Predictor` is created, mlserver runtime pods are automatically started to load and serve it.
 
@@ -79,9 +75,9 @@ Once the `Predictor` is created, mlserver runtime pods are automatically started
 $ kubectl get pods
 
 NAME                                         READY   STATUS              RESTARTS   AGE
-wml-serving-mlserver-0.x-658b7dd689-46nwm    0/3     ContainerCreating   0          2s
-wml-serving-mlserver-0.x-658b7dd689-46nwm    0/3     ContainerCreating   0          2s
-wmlserving-controller-568c45b959-nl88c       1/1     Running             0          11m
+modelmesh-serving-mlserver-0.x-658b7dd689-46nwm    0/3     ContainerCreating   0          2s
+modelmesh-serving-mlserver-0.x-658b7dd689-46nwm    0/3     ContainerCreating   0          2s
+modelmesh-controller-568c45b959-nl88c       1/1     Running             0          11m
 ```
 
 3. Check the status of your Predictor:
@@ -199,8 +195,8 @@ example-mnist-predictor   sklearn   true        Loaded        Failed        Bloc
 
 ## For More Details
 
-- [Setup Storage](/predictors/setup-storage)
-- [Inferencing](/predictors/run-inference)
-- [Predictor Spec](/predictors/predictor-spec)
+- [Setup Storage](setup-storage.md)
+- [Inferencing](run-inference.md)
+- [Predictor Spec](predictor-spec.md)
 
-A [Jupyter Notebook](https://github.ibm.com/ai-foundation/wml-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example can also be found in wml-serving repo.
+A [Jupyter Notebook](https://github.ibm.com/kserve/modelmesh-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example can also be found in wml-serving repo.

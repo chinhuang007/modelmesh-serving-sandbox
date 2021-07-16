@@ -151,4 +151,4 @@ grpcurl \
   inference.GRPCInferenceService.ModelInfer
 ```
 
-A [Jupyter Notebook](https://github.ibm.com/ai-foundation/wml-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example with an additional Tensorflow example can also be found in wml-serving repo.
+A [Jupyter Notebook](https://github.ibm.com/kserve/modelmesh-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example with an additional Tensorflow example can also be found in wml-serving repo.

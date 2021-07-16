@@ -1,7 +1,7 @@
 ---
 title: Sample Models
 ---
-
+# Sample Models
 A set of example models are shared via an IBM Cloud COS instance to use when getting started with Model-Mesh Serving and experimenting with the provided runtimes.
 
 ## Predictors

@@ -14,18 +14,15 @@
 resources:
   - triton-2.x.yaml
   - mlserver-0.x.yaml
-  - msp-ml-server-0.x.yaml
 
 images:
   - name: tritonserver-2
     newName: nvcr.io/nvidia/tritonserver
     newTag: 20.12-py3
-    digest: sha256:2bd0d724ba02aeca323b0c78c8617bc0a51ded90a4f6de4e282a3cfeef1d8614
 
   - name: mlserver-0
     newName: seldonio/mlserver
     newTag: 0.3.2
-    digest: sha256:b498f448b7139210026dac01908d4473ca2cb86e3bff4560adb6b8350357eaf9
 
 transformers:
   - ../default/metadataLabelTransformer.yaml
