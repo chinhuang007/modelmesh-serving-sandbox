@@ -57,6 +57,10 @@ spec:
           ports:
             - name: grpc
               containerPort: {{.Port}}
+            {{if .Metrics}}
+            - name: prometheus
+              containerPort: {{.PrometheusPort}}
+            {{end}}
           env:
             - name: MM_SERVICE_NAME
               value: {{.ServiceName}}

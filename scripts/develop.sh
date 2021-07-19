@@ -29,7 +29,7 @@ usage() {
 
 ARTIFACTORY_REGISTRY="kserve"
 PARAMS=""
-CONTROLLER_IMG="wmlserving-controller"
+CONTROLLER_IMG="modelmesh-controller"
 
 while (("$#")); do
   arg="$1"
@@ -60,7 +60,7 @@ touch .bash_history
 declare -a docker_run_args=(
   -v "${PWD}:/workspace"
   -v "${PWD}/.bash_history:/workspace/.bash_history"
-  -v /var/run/docker.sock:/var/run/docker.sock 
+  -v /var/run/docker.sock:/var/run/docker.sock
 )
 
 if [ "${CI}" != "true" ]; then

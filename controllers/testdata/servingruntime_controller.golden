@@ -112,6 +112,9 @@ spec:
         - containerPort: 1234
           name: grpc
           protocol: TCP
+        - containerPort: 2222
+          name: prometheus
+          protocol: TCP
         readinessProbe:
           failureThreshold: 3
           httpGet:

@@ -38,6 +38,8 @@ type MMService struct {
 	TLSConfig     *tls.Config
 
 	mmClient *mmClient
+
+	MetricsPort uint16
 }
 
 func NewMMService() *MMService {
@@ -45,7 +47,7 @@ func NewMMService() *MMService {
 }
 
 func (mms *MMService) UpdateConfig(name string, port uint16,
-	endpoint, tlsSecretName string, tlsConfig *tls.Config, headless bool) bool {
+	endpoint, tlsSecretName string, tlsConfig *tls.Config, headless bool, metricsPort uint16) bool {
 	changed := false
 	if name != mms.Name {
 		mms.Name = name
@@ -69,6 +71,10 @@ func (mms *MMService) UpdateConfig(name string, port uint16,
 	}
 	if headless != mms.Headless {
 		mms.Headless = headless
+		changed = true
+	}
+	if metricsPort != mms.MetricsPort {
+		mms.MetricsPort = metricsPort
 		changed = true
 	}
 	return changed

@@ -49,7 +49,7 @@ type ClusterConfig struct {
 }
 
 func (cc ClusterConfig) Apply(ctx context.Context, owner metav1.Object, cl client.Client) error {
-	commonLabelValue := "wmlserving-controller"
+	commonLabelValue := "modelmesh-controller"
 	m := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      InternalConfigMapName,

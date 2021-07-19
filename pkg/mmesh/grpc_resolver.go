@@ -20,6 +20,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-logr/logr"
+
 	"google.golang.org/grpc/resolver"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -37,21 +39,44 @@ type serviceResolver struct {
 	cc    resolver.ClientConn
 }
 
-// not needed because we resolve whenever there are any endpoint changes
-func (r *serviceResolver) ResolveNow(resolver.ResolveNowOptions) {}
+// ResolveNow not needed because we resolve whenever there are any endpoint changes
+func (sr *serviceResolver) ResolveNow(resolver.ResolveNowOptions) {}
 
-func (r *serviceResolver) Close() {
-	r.owner.resolvers.Delete(r.name)
+func (sr *serviceResolver) Close() {
+	kr := sr.owner
+	kr.lock.Lock()
+	defer kr.lock.Unlock()
+	list, ok := kr.resolvers[sr.name]
+	if ok {
+		for i, r := range list {
+			if r == sr {
+				if last := len(list) - 1; last <= 0 {
+					delete(kr.resolvers, sr.name) // remove entry if last one
+				} else {
+					list[i] = list[last]
+					kr.resolvers[sr.name] = list[:last]
+				}
+				kr.logger.V(1).Info("Removed resolver", "name", sr.name)
+				return
+			}
+		}
+	}
+	kr.logger.V(1).Info("Close called on unrecognized resolver", "name", sr.name)
 }
 
-// Should only be called once
+// InitGrpcResolver should only be called once
 func InitGrpcResolver(namespace string, mgr ctrl.Manager) (*KubeResolver, error) {
-	kr := &KubeResolver{namespace: namespace, Client: mgr.GetClient()}
+	kr := &KubeResolver{
+		namespace: namespace, Client: mgr.GetClient(),
+		resolvers: make(map[string][]*serviceResolver, 2),
+		logger:    ctrl.Log.WithName("KubeResolver"),
+	}
 	err := ctrl.NewControllerManagedBy(mgr).For(&corev1.Endpoints{}).Complete(kr)
 	if err != nil {
 		return nil, err
 	}
 	resolver.Register(kr)
+	kr.logger.Info("Registered KubeResolver with kubebuilder and gRPC")
 	return kr, nil
 }
 
@@ -61,7 +86,10 @@ type KubeResolver struct {
 	namespace string
 
 	// Map of resolvers in use
-	resolvers sync.Map
+	resolvers map[string][]*serviceResolver
+	lock      sync.Mutex
+
+	logger logr.Logger
 }
 
 func (kr *KubeResolver) Build(target resolver.Target, cc resolver.ClientConn,
@@ -74,12 +102,23 @@ func (kr *KubeResolver) Build(target resolver.Target, cc resolver.ClientConn,
 		return nil, fmt.Errorf("target must be of form: %s:///servicename:port", target.Scheme)
 	}
 
-	r := serviceResolver{name: parts[0], port: parts[1], cc: cc, owner: kr}
-	kr.resolvers.Store(r.name, r)
-	_, err := kr.Reconcile(context.TODO(), ctrl.Request{
-		NamespacedName: types.NamespacedName{Namespace: kr.namespace, Name: r.name},
-	})
-	return &r, err
+	r := &serviceResolver{name: parts[0], port: parts[1], cc: cc, owner: kr}
+	kr.lock.Lock()
+	defer kr.lock.Unlock()
+	list, ok := kr.resolvers[r.name]
+	singleton := []*serviceResolver{r}
+	if ok {
+		kr.resolvers[r.name] = append(list, r)
+	} else {
+		kr.resolvers[r.name] = singleton
+	}
+	log := r.owner.logger.V(1)
+	log.Info("Built new resolver", "target", target, "name", r.name)
+	// Initialize resolver state before returning via a synchronous reconciliation
+	_, err := kr.reconcile(context.TODO(),
+		ctrl.Request{NamespacedName: types.NamespacedName{Namespace: kr.namespace, Name: r.name}},
+		singleton, log)
+	return r, err
 }
 
 func (*KubeResolver) Scheme() string {
@@ -90,30 +129,44 @@ func (kr *KubeResolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	if req.Namespace != kr.namespace {
 		return ctrl.Result{}, nil
 	}
-	v, ok := kr.resolvers.Load(req.Name)
-	if !ok {
-		return ctrl.Result{}, nil
+	log := kr.logger.WithName("Reconcile").V(1)
+	kr.lock.Lock()
+	defer kr.lock.Unlock()
+	if list, ok := kr.resolvers[req.Name]; ok {
+		return kr.reconcile(ctx, req, list, log)
 	}
-	r := v.(serviceResolver)
+	log.Info("Ignoring event for Endpoints with no resolver", "endpoints", req.Name)
+	return ctrl.Result{}, nil
+}
+
+// called under lock
+func (kr *KubeResolver) reconcile(ctx context.Context, req ctrl.Request,
+	list []*serviceResolver, log logr.Logger) (ctrl.Result, error) {
 	endpoints := &corev1.Endpoints{}
 	err := kr.Get(ctx, req.NamespacedName, endpoints)
-	if errors.IsNotFound(err) {
-		r.cc.ReportError(fmt.Errorf("kube Service %s not found", req.Name))
-		return ctrl.Result{}, nil // not an error from reconciler pov
-	}
 	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("error obtaining endpoints for service %s: %w", req.Name, err)
-	}
-
-	var addrs []resolver.Address
-	for _, s := range endpoints.Subsets {
-		if p := hasTargetPort(&s, r.port); p > 0 {
-			for _, ea := range s.Addresses {
-				addrs = append(addrs, resolver.Address{Addr: fmt.Sprintf("%s:%d", ea.IP, p)})
-			}
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, fmt.Errorf("error obtaining endpoints for service %s: %w", req.Name, err)
+		} else {
+			log.Info("Endpoints not found", "endpoints", req.Name)
 		}
 	}
-	r.cc.UpdateState(resolver.State{Addresses: addrs})
+	for _, r := range list {
+		if errors.IsNotFound(err) {
+			r.cc.ReportError(fmt.Errorf("kube Service %s not found", req.Name))
+			continue // not an error from reconciler pov
+		}
+		var addrs []resolver.Address
+		for _, s := range endpoints.Subsets {
+			if p := hasTargetPort(&s, r.port); p > 0 {
+				for _, ea := range s.Addresses {
+					addrs = append(addrs, resolver.Address{Addr: fmt.Sprintf("%s:%d", ea.IP, p)})
+				}
+			}
+		}
+		r.cc.UpdateState(resolver.State{Addresses: addrs})
+		log.Info("Updated resolver state with new endpoints", "endpoints", req.Name, "count", len(addrs))
+	}
 	return ctrl.Result{}, nil
 }
 

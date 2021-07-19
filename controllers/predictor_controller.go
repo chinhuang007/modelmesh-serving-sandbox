@@ -209,8 +209,11 @@ func (pr *PredictorReconciler) handlePredictorNotFound(ctx context.Context, name
 	defer cancel()
 	_, err := mmc.DeleteVModel(deleteCtx, &mmeshapi.DeleteVModelRequest{VModelId: name.Name})
 	if err != nil {
-		pr.Log.Error(err, "Failed to remove corresponding VModel", "namespacedName", name)
-		return ctrl.Result{RequeueAfter: 20 * time.Second}, err //TODO parameterize/backoff
+		if isNoAddresses(err) {
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+		}
+		err = fmt.Errorf("failed to remove corresponding VModel for deleted Predictor %s: %w", name, err)
+		return ctrl.Result{}, err
 	}
 	pr.Log.Info("VModel removed", "vmodelId", name.Name, "namespace", name.Namespace)
 	return ctrl.Result{}, nil
@@ -257,12 +260,13 @@ const noHomeMessage string = "There are no running instances that meet the label
 
 func decodeModelState(status *mmeshapi.ModelStatusInfo) (servingv1.ModelState, servingv1.FailureReason, string) {
 	state := modelStateMap[status.Status]
+	reason := servingv1.FailureReason("")
 	msg := ""
 	if len(status.Errors) > 0 {
-		msg = status.Errors[0]
+		reason, msg = servingv1.ModelLoadFailed, status.Errors[0]
 	}
 	if state != servingv1.FailedToLoad {
-		return state, "", msg
+		return state, reason, msg
 	}
 	if !strings.HasPrefix(msg, noHomeMessage) {
 		return servingv1.FailedToLoad, servingv1.ModelLoadFailed, msg
@@ -291,7 +295,9 @@ func (pr *PredictorReconciler) updatePredictorStatusFromVModel(status *servingv1
 
 	tmsBefore := status.TargetModelState
 	counts := [3]int{}
-	countModelCopyStates(vModelState.ActiveModelStatus.ModelCopyInfos, &counts)
+	if amfr == "" || amfr == servingv1.ModelLoadFailed {
+		countModelCopyStates(vModelState.ActiveModelStatus.ModelCopyInfos, &counts)
+	}
 	var targetModelStatus *mmeshapi.ModelStatusInfo
 	var targetModelFailureReason servingv1.FailureReason
 	var targetModelMessage string

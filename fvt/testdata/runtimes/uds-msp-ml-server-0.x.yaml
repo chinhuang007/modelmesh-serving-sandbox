@@ -1,0 +1,42 @@
+# Version of the msp server runtime which uses UDS for both
+# data and management endpoints, to test UDS from puller container.
+apiVersion: wmlserving.ai.ibm.com/v1
+kind: ServingRuntime
+metadata:
+  labels:
+    name: uds-test-msp
+  name: uds-test-msp
+spec:
+  containers:
+    - env:
+        - name: MODEL_DIRECTORY_PATH
+          value: /models
+        - name: MODEL_SERVER_MEM_REQ_BYTES
+          valueFrom:
+            resourceFieldRef:
+              containerName: msp
+              resource: requests.memory
+        - name: MODEL_MANAGEMENT_GRPC_ENDPOINT
+          value: unix:/msp/grpc.sock
+        - name: INFERENCE_GRPC_ENDPOINT
+          value: unix:/msp/grpc.sock
+      image: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/msp-ml-server:0.1.0_20210604-11
+      name: msp
+      resources:
+        limits:
+          cpu: "5"
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+  grpcDataEndpoint: unix:/msp/grpc.sock
+  grpcEndpoint: unix:/msp/grpc.sock
+  supportedModelTypes:
+    - name: spark
+      version: "3.1" # 3.1.1
+    - name: mleap
+      version: "0" # 0.17
+    - name: pmml
+      version: "4" # 4.x
+    - name: pmml
+      version: "3" # 3.x

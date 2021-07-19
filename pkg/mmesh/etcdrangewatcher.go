@@ -43,6 +43,7 @@ type EtcdConfig struct {
 	OverrideAuthority     string `json:"override_authority"`
 }
 
+// EtcdRangeWatcher A wrapper for Etcd Watch with common refresh Watch Channel logic
 type EtcdRangeWatcher struct {
 	logger      logr.Logger
 	etcdClient  *etcd3.Client
@@ -84,9 +85,6 @@ type cacheEntry struct {
 	found bool // This is false during watch phase
 }
 
-/*
-A wrapper for Etcd Watch with common refresh Watch Channel logic
-*/
 func NewEtcdRangeWatcher(logger logr.Logger, etcd *etcd3.Client, prefix string) *EtcdRangeWatcher {
 	return &EtcdRangeWatcher{
 		etcdClient:  etcd,

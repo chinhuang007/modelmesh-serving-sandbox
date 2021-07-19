@@ -56,7 +56,7 @@ type ServingRuntimeReconciler struct {
 	Log                 logr.Logger
 	Scheme              *runtime.Scheme
 	ConfigProvider      *ConfigProvider
-	ConfigKey           types.NamespacedName
+	ConfigMapName       types.NamespacedName
 	DeploymentName      string
 	DeploymentNamespace string
 	// store some information about current runtimes for making scaling decisions
@@ -81,6 +81,7 @@ var builtInServerTypes = map[api.ServerType]interface{}{
 
 func (r *ServingRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("servingruntime", req.NamespacedName)
+	log.V(1).Info("ServingRuntime reconciler called")
 
 	// Reconcile the model mesh cluster config map
 	runtimes := &api.ServingRuntimeList{}
@@ -348,7 +349,7 @@ func (r *ServingRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		// watch the user configmap and reconcile all runtimes when it changes
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}},
-			ConfigWatchHandler(r.ConfigKey, func() []reconcile.Request {
+			ConfigWatchHandler(r.ConfigMapName, func() []reconcile.Request {
 				list := &api.ServingRuntimeList{}
 				requests := make([]reconcile.Request, 0, 4)
 				if err2 := r.Client.List(context.TODO(), list); err2 == nil {

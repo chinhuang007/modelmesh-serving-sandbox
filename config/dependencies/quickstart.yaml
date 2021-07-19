@@ -106,7 +106,7 @@ stringData:
       "default_bucket": "",
       "region": "us-south"
     }
-  wml-serving-example-models: |
+  modelmesh-example-models: |
     {
       "type": "s3",
       "access_key_id": "ecb983f11822423ca9e487f898d54a8f",

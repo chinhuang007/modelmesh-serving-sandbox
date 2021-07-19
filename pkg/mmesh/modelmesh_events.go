@@ -140,7 +140,6 @@ func (mes *ModelMeshEventStream) UpdateWatchedService(ctx context.Context, etcdS
 	modelRegistryPrefix := fmt.Sprintf("%s/%s/", servicePrefix, ModelRegistryPrefix)
 	NewEtcdRangeWatcher(mes.logger, mes.etcdClient, modelRegistryPrefix).
 		Start(watchCtx, func(eventType KeyEventType, key string, value *[]byte) {
-			//TODO change this to debug
 			mes.logger.V(1).Info("ModelMesh Model Event", "modelId", key, "event", eventType)
 			if eventType == UPDATE {
 				nameLen := len(key) - 11 // Remove generated hash suffix ('-' plus 10 chars)

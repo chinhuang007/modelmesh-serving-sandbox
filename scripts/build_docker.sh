@@ -33,7 +33,7 @@ usage() {
 BASE_IMAGE="required"
 DOCKER_TARGET="runtime"
 DOCKER_TAG="$(git rev-parse --abbrev-ref HEAD)-$(date +"%Y%m%dT%H%M%S%Z")"
-CONTROLLER_IMG="wmlserving-controller"
+CONTROLLER_IMG="modelmesh-controller"
 
 while (("$#")); do
   arg="$1"

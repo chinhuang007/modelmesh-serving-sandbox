@@ -17,7 +17,7 @@ set -euo pipefail
 #shopt -s inherit_errexit
 
 CONTEXT_DIR=devbuild
-IMAGE_NAME=kserve/wmlserving-controller-develop
+IMAGE_NAME=kserve/modelmesh-controller-develop
 DEV_DEPS="$0 Dockerfile.develop BASE_IMAGE_TAG go.mod go.sum .pre-commit-config.yaml"
 
 # command is shasum on osx

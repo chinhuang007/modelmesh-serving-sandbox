@@ -43,7 +43,7 @@ For more details of configuring model storage, see the [Setup Storage](setup-sto
 
 2. Create a Predictor Custom Resource to serve the sample model
 
-The `config/example-predictors` directory contains Predictor manifests for many of the example models. For a list of available models, see the [example models documentation](example-models#available-models).
+The `config/example-predictors` directory contains Predictor manifests for many of the example models. For a list of available models, see the [example models documentation](../example-models#available-models).
 
 Here we are deploying an sklearn model located at `sklearn/mnist-svm.joblib` within the shared COS storage.
 
@@ -88,7 +88,7 @@ NAME                      TYPE      AVAILABLE   ACTIVEMODEL   TARGETMODEL   TRAN
 example-mnist-predictor   sklearn   true        Loading                     UpToDate     60s
 
 $ kubectl get predictor example-mnist-predictor -o=jsonpath='{.status.grpcEndpoint}'
-grpc://wml-serving:8033
+grpc://modelmesh-serving:8033
 ```
 
 The states should reflect immediate availability, but may take some seconds to move from `Loading` to `Loaded`.

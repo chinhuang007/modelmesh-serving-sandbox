@@ -53,6 +53,7 @@ type FVTPredictor struct {
 
 // relative path of the predictor sample files
 const samplesPath string = "testdata/predictors/"
+const runtimeSamplesPath string = "testdata/runtimes/"
 const userConfigMapName string = "model-serving-config"
 
 var xgBoostInputData []float32 = []float32{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0}
@@ -210,112 +211,6 @@ var _ = Describe("Predictor", func() {
 				Expect(obj.GetName()).To(Equal(predictorName))
 				ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
 
-			})
-
-			It("predictor should fail to load with invalid storage path", func() {
-				// modify the object with an invalid storage path
-				SetString(predictorObject, "invalid/Storage/Path", "spec", "path")
-
-				By("Creating a predictor with invalid storage")
-				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-				defer watcher.Stop()
-				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
-				startTime = GetString(obj, "metadata", "creationTimestamp")
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
-
-				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
-
-				By("Asserting on the predictor state")
-				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
-				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
-			})
-
-			It("should fail to load with invalid storage bucket", func() {
-				// modify the object with an invalid storage bucket
-				SetString(predictorObject, "invalidBucket", "spec", "storage", "s3", "bucket")
-
-				By("Creating a predictor with invalid storage")
-				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-				defer watcher.Stop()
-				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
-				startTime = GetString(obj, "metadata", "creationTimestamp")
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
-
-				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
-
-				By("Asserting on the predictor state")
-				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
-				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
-				// TODO can we check for a more detailed error message?
-			})
-
-			It("should fail to load with invalid storage key", func() {
-				// modify the object with an invalid storage path
-				SetString(predictorObject, "invalidKey", "spec", "storage", "s3", "secretKey")
-
-				By("Creating a predictor with invalid storage")
-				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-				defer watcher.Stop()
-				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
-				startTime = GetString(obj, "metadata", "creationTimestamp")
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
-
-				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
-
-				By("Asserting on the predictor state")
-				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
-				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
-				// TODO can we check for a more detailed error message?
-			})
-
-			It("predictor should fail to load with unrecognized model type", func() {
-				// modify the object with an unrecognized model type
-				SetString(predictorObject, "invalidModelType", "spec", "modelType", "name")
-
-				By("Creating a predictor with invalid model type")
-				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-				defer watcher.Stop()
-				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
-				startTime = GetString(obj, "metadata", "creationTimestamp")
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
-
-				By("Waiting for the predictor to be 'FailedToLoad'")
-				WaitForStableActiveModelState("FailedToLoad", watcher)
-
-				By("Listing the predictor")
-				obj = ListAllPredictorsExpectOne()
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
-				ExpectPredictorFailureInfo(obj, "NoSupportingRuntime", false, true, "No ServingRuntime supports specified model type")
-			})
-
-			It("predictor should fail to load with unrecognized runtime type", func() {
-				// modify the object with an unrecognized runtime type
-				SetString(predictorObject, "invalidRuntimeType", "spec", "runtime", "name")
-
-				By("Creating a predictor with invalid runtime type")
-				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-				defer watcher.Stop()
-				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
-				startTime = GetString(obj, "metadata", "creationTimestamp")
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
-
-				By("Waiting for the predictor to be 'FailedToLoad'")
-				WaitForStableActiveModelState("FailedToLoad", watcher)
-
-				By("Listing the predictor")
-				obj = ListAllPredictorsExpectOne()
-				Expect(obj.GetName()).To(Equal(predictorName))
-				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
-				ExpectPredictorFailureInfo(obj, "RuntimeNotRecognized", false, true, "Specified runtime name not recognized")
 			})
 
 			It("should successfully load two models of different types", func() {
@@ -1403,6 +1298,117 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
+	var _ = Describe("UDS testing", func() {
+
+		var ptPredictorObject *unstructured.Unstructured
+		var ptPredictorName string
+		var startTime string
+
+		BeforeEach(func() {
+			var err error
+			// verify clean state (no predictors)
+			list := fvtClient.ListPredictors(metav1.ListOptions{})
+			Expect(list.Items).To(BeEmpty())
+
+			// create new msp-ml-server runtime
+			// Predictor created in this test is associated with this SR because of the label,
+			// and predictor waits for deployments of this newly created runtime before loading.
+			err = fvtClient.RunKubectl("create", "-f", runtimeSamplesPath+"uds-msp-ml-server-0.x.yaml")
+			Expect(err).ToNot(HaveOccurred())
+
+			// ensure a stable deploy state
+			watcherDeploys := fvtClient.StartWatchingDeploys()
+			defer watcherDeploys.Stop()
+			By("Waiting for the deployments replicas to be ready")
+			WaitForStableActiveDeployState(watcherDeploys)
+
+			// load the test predictor object
+			ptPredictorObject = DecodeResourceFromFile(samplesPath + "uds-test-pmml-predictor.yaml")
+			ptPredictorName = GetString(ptPredictorObject, "metadata", "name")
+
+			// create the predictor
+			watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+			defer watcher.Stop()
+			createdPredictor := fvtClient.CreatePredictorExpectSuccess(ptPredictorObject)
+			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
+			By("Waiting for the predictor to be 'Loaded'")
+			obj := WaitForStableActiveModelState("Loaded", watcher)
+			resourceVersion := GetString(obj, "metadata", "resourceVersion")
+			SetString(ptPredictorObject, resourceVersion, "metadata", "resourceVersion")
+
+			err = fvtClient.ConnectToModelMesh(Insecure)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			var err error
+			fvtClient.DisconnectFromModelMesh()
+			if CurrentGinkgoTestDescription().Failed {
+				fvtClient.PrintPredictors()
+				fvtClient.TailPodLogs(startTime)
+			}
+			// deleting msp runtime that was created for this test case
+			err = fvtClient.RunKubectl("delete", "-f", runtimeSamplesPath+"uds-msp-ml-server-0.x.yaml")
+			Expect(err).ToNot(HaveOccurred())
+			fvtClient.DeleteAllPredictors()
+		})
+
+		It("should successfully run inference", func() {
+			inferInput1 := &inference.ModelInferRequest_InferInputTensor{
+				Name:     "AGE",
+				Shape:    []int64{2},
+				Datatype: "FP64",
+				Contents: &inference.InferTensorContents{Fp64Contents: []float64{47, 27}},
+			}
+			inferInput2 := &inference.ModelInferRequest_InferInputTensor{
+				Name:     "FeatureCols2",
+				Shape:    []int64{2, 3},
+				Datatype: "STRING",
+				Parameters: map[string]*inference.InferParameter{
+					"features": {
+						ParameterChoice: &inference.InferParameter_StringParam{
+							StringParam: "SEX,BP,CHOLESTEROL",
+						},
+					},
+				},
+				Contents: &inference.InferTensorContents{
+					BytesContents: [][]byte{[]byte("M"), []byte("LOW"), []byte("HIGH"), []byte("F"), []byte("LOW"), []byte("HIGH")},
+				},
+			}
+			inferInput3 := &inference.ModelInferRequest_InferInputTensor{
+				Name:     "FeatureCols3",
+				Shape:    []int64{2, 2},
+				Datatype: "FP64",
+				Parameters: map[string]*inference.InferParameter{
+					"features": {
+						ParameterChoice: &inference.InferParameter_StringParam{
+							StringParam: "NA,K",
+						},
+					},
+				},
+				Contents: &inference.InferTensorContents{Fp64Contents: []float64{0.739, 0.056, 0.939, 0.156}},
+			}
+			inferRequest := &inference.ModelInferRequest{
+				ModelName: ptPredictorName,
+				Inputs:    []*inference.ModelInferRequest_InferInputTensor{inferInput1, inferInput2, inferInput3},
+			}
+
+			// run the inference
+			inferResponse, err := fvtClient.RunKfsInference(inferRequest)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(inferResponse).ToNot(BeNil())
+			Expect(inferResponse.ModelName).To(HavePrefix(ptPredictorName))
+			Expect(inferResponse.Outputs[0].Datatype).To(BeEquivalentTo("STRING"))
+			Expect(inferResponse.Outputs[0].Shape).To(ConsistOf([]int64{2}))
+			Expect(inferResponse.Outputs[0].Contents.BytesContents).To(ConsistOf([][]byte{[]byte("drugC"), []byte("drugC")}))
+			Expect(inferResponse.Outputs[1].Datatype).To(BeEquivalentTo("FP64"))
+			Expect(inferResponse.Outputs[1].Shape).To(ConsistOf([]int64{2, 13}))
+			Expect(inferResponse.Outputs[1].Parameters["features"].GetStringParam()).To(BeEquivalentTo("$NP-drugA,$NP-drugB,$NP-drugC,$NP-drugX,$NP-drugY,$NC-DRUG,$N-WeightedInputs-Neuron10,$N-WeightedInputs-Neuron11,$N-WeightedInputs-Neuron12,$N-WeightedInputs-Neuron13,$N-WeightedInputs-Neuron14,$N-WeightedInputs-Neuron15,$N-WeightedInputs-Neuron16"))
+			Expect(inferResponse.Outputs[1].Contents.Fp64Contents).To(HaveLen(26))
+			Expect(inferResponse.Outputs[1].Contents.Fp64Contents).NotTo(ContainElement("null"))
+		})
+	})
+
 	var _ = Describe("Mleap inference", func() {
 
 		var ptPredictorObject *unstructured.Unstructured
@@ -1783,6 +1789,163 @@ var _ = Describe("Predictor", func() {
 	// to wait for the configuration changes to roll out to all Deployments.
 })
 
+// These tests verify that an invalid Predictor fails to load. These are in a
+// separate block in part because a high frequency of failures can trigger Model
+// Mesh's "bootstrap failure" mechanism which prevents rollouts of new pods that
+// fail frequently by causing them to fail the readiness check.
+// At the end of this block, all runtime deployments are rolled out to remove
+// any that may have gone unready.
+var _ = Describe("Invalid Predictors", func() {
+	var predictorObject *unstructured.Unstructured
+	var predictorName string
+	var startTime string
+
+	AfterEach(func() {
+		if CurrentGinkgoTestDescription().Failed {
+			fvtClient.PrintPredictors()
+			fvtClient.TailPodLogs(startTime)
+		}
+		fvtClient.DeleteAllPredictors()
+	})
+
+	Specify("Preparing the cluster for Invalid Predictor tests", func() {
+		// ensure configuration has scale-to-zero disabled
+		config := map[string]interface{}{
+			"scaleToZero": map[string]interface{}{
+				"enabled": false,
+			},
+		}
+		fvtClient.ApplyUserConfigMap(config)
+
+		// ensure a stable deploy state
+		watcher := fvtClient.StartWatchingDeploys()
+		defer watcher.Stop()
+		WaitForStableActiveDeployState(watcher)
+	})
+
+	for _, p := range predictorsArray {
+		predictor := p
+
+		Describe("invalid cases for the "+predictor.predictorName+" predictor", func() {
+			BeforeEach(func() {
+				// load the test predictor object
+				predictorObject = DecodeResourceFromFile(samplesPath + predictor.predictorFilename)
+				predictorName = GetString(predictorObject, "metadata", "name")
+			})
+
+			It("predictor should fail to load with invalid storage path", func() {
+				// modify the object with an invalid storage path
+				SetString(predictorObject, "invalid/Storage/Path", "spec", "path")
+
+				By("Creating a predictor with invalid storage")
+				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+				defer watcher.Stop()
+				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
+				startTime = GetString(obj, "metadata", "creationTimestamp")
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
+
+				By("Waiting for the predictor to be 'FailedToLoad'")
+				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+
+				By("Asserting on the predictor state")
+				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
+				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
+			})
+
+			It("should fail to load with invalid storage bucket", func() {
+				// modify the object with an invalid storage bucket
+				SetString(predictorObject, "invalidBucket", "spec", "storage", "s3", "bucket")
+
+				By("Creating a predictor with invalid storage")
+				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+				defer watcher.Stop()
+				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
+				startTime = GetString(obj, "metadata", "creationTimestamp")
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
+
+				By("Waiting for the predictor to be 'FailedToLoad'")
+				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+
+				By("Asserting on the predictor state")
+				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
+				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
+				// TODO can we check for a more detailed error message?
+			})
+
+			It("should fail to load with invalid storage key", func() {
+				// modify the object with an invalid storage path
+				SetString(predictorObject, "invalidKey", "spec", "storage", "s3", "secretKey")
+
+				By("Creating a predictor with invalid storage")
+				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+				defer watcher.Stop()
+				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
+				startTime = GetString(obj, "metadata", "creationTimestamp")
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
+
+				By("Waiting for the predictor to be 'FailedToLoad'")
+				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+
+				By("Asserting on the predictor state")
+				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
+				ExpectPredictorFailureInfo(obj, "ModelLoadFailed", true, true, "")
+				// TODO can we check for a more detailed error message?
+			})
+
+			It("predictor should fail to load with unrecognized model type", func() {
+				// modify the object with an unrecognized model type
+				SetString(predictorObject, "invalidModelType", "spec", "modelType", "name")
+
+				By("Creating a predictor with invalid model type")
+				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+				defer watcher.Stop()
+				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
+				startTime = GetString(obj, "metadata", "creationTimestamp")
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
+
+				By("Waiting for the predictor to be 'FailedToLoad'")
+				WaitForStableActiveModelState("FailedToLoad", watcher)
+
+				By("Listing the predictor")
+				obj = ListAllPredictorsExpectOne()
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
+				ExpectPredictorFailureInfo(obj, "NoSupportingRuntime", false, true, "No ServingRuntime supports specified model type")
+			})
+
+			It("predictor should fail to load with unrecognized runtime type", func() {
+				// modify the object with an unrecognized runtime type
+				SetString(predictorObject, "invalidRuntimeType", "spec", "runtime", "name")
+
+				By("Creating a predictor with invalid runtime type")
+				watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+				defer watcher.Stop()
+				obj := fvtClient.CreatePredictorExpectSuccess(predictorObject)
+				startTime = GetString(obj, "metadata", "creationTimestamp")
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
+
+				By("Waiting for the predictor to be 'FailedToLoad'")
+				WaitForStableActiveModelState("FailedToLoad", watcher)
+
+				By("Listing the predictor")
+				obj = ListAllPredictorsExpectOne()
+				Expect(obj.GetName()).To(Equal(predictorName))
+				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
+				ExpectPredictorFailureInfo(obj, "RuntimeNotRecognized", false, true, "Specified runtime name not recognized")
+			})
+		})
+	}
+
+	Specify("Restart pods to reset Bootstrap failure checks", func() {
+		fvtClient.RestartDeploys()
+	})
+})
+
 func ExpectPredictorState(obj *unstructured.Unstructured, available bool, activeModelState, targetModelState, transitionStatus string) {
 	actualActiveModelState := GetString(obj, "status", "activeModelState")
 	Expect(actualActiveModelState).To(Equal(activeModelState))
@@ -1824,7 +1987,6 @@ func ExpectPredictorFailureInfo(obj *unstructured.Unstructured, reason string, h
 		Expect(actualFailureInfo["time"]).ToNot(BeNil())
 		actualTime, err := time.Parse(time.RFC3339, actualFailureInfo["time"].(string))
 		Expect(err).To(BeNil())
-		Expect(actualTime.Before(time.Now())).To(BeTrue())
 		Expect(time.Since(actualTime) < time.Minute).To(BeTrue())
 	}
 }
@@ -1956,7 +2118,7 @@ func WaitForDeployStatus(watcher watch.Interface, timeToStabilize time.Duration)
 
 		// this case executes if no events are received during the timeToStabilize duration
 		case <-time.After(timeToStabilize):
-			// targetStateReached and stable
+			// check if all deployments are ready
 			stable := true
 			for _, status := range deployStatusesReady {
 				if status == false {
@@ -1964,10 +2126,9 @@ func WaitForDeployStatus(watcher watch.Interface, timeToStabilize time.Duration)
 					break
 				}
 			}
-			if stable && len(deployStatusesReady) == 3 {
+			if stable {
 				targetStateReached = true
 				done = true
-				break
 			}
 		}
 	}

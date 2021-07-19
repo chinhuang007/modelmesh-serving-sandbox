@@ -444,6 +444,38 @@ func (fvt *FVTClient) ListDeploys() appsv1.DeploymentList {
 	return deployments
 }
 
+func (fvt *FVTClient) RestartDeploys() {
+	// trigger a restart by patching an annotation with a timestamp
+	// generate the JSON patch that adds/modifies the annotation
+	patch := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "apps/v1",
+			"kind":       "Deployment",
+			"spec": map[string]interface{}{
+				"template": map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"annotations": map[string]interface{}{
+							"fvtclient/restartedAt": time.Now().String(),
+						},
+					},
+				},
+			},
+		},
+	}
+	patchJson, err := json.Marshal(patch)
+	Expect(err).ToNot(HaveOccurred())
+
+	deploys := fvt.ListDeploys()
+	for _, d := range deploys.Items {
+		dName := d.GetName()
+		log.Info(fmt.Sprintf("Restarting '%s'", dName))
+		// uses server-side-apply
+		_, err = fvt.Resource(gvrDeployment).Namespace(fvt.namespace).
+			Patch(context.TODO(), dName, types.ApplyPatchType, patchJson, applyPatchOptions)
+		Expect(err).ToNot(HaveOccurred())
+	}
+}
+
 func (fvt *FVTClient) DeleteConfigMap(resourceName string) error {
 	configMapExists, _ := fvt.Resource(gvrConfigMap).Namespace(fvt.namespace).Get(context.TODO(), resourceName, metav1.GetOptions{})
 

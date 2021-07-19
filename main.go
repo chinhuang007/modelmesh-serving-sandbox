@@ -69,7 +69,7 @@ const (
 	KubeNamespaceFile              = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 	ControllerPodNameEnvVar        = "POD_NAME"
 	ControllerDeploymentNameEnvVar = "CONTROLLER_DEPLOYMENT"
-	DefaultControllerName          = "wmlserving-controller"
+	DefaultControllerName          = "modelmesh-controller"
 	UserConfigMapName              = "model-serving-config"
 )
 
@@ -168,7 +168,7 @@ func main() {
 		Namespace:               ControllerNamespace,
 		Port:                    9443,
 		LeaderElection:          enableLeaderElection,
-		LeaderElectionID:        "wmlserving-controller-leader-lock",
+		LeaderElectionID:        "modelmesh-controller-leader-lock",
 		LeaderElectionNamespace: ControllerNamespace,
 		HealthProbeBindAddress:  probeAddr,
 	})
@@ -220,7 +220,7 @@ func main() {
 		Log:                 ctrl.Log.WithName("controllers").WithName("ServingRuntime"),
 		Scheme:              mgr.GetScheme(),
 		ConfigProvider:      cp,
-		ConfigKey:           types.NamespacedName{Namespace: ControllerNamespace, Name: UserConfigMapName},
+		ConfigMapName:       types.NamespacedName{Namespace: ControllerNamespace, Name: UserConfigMapName},
 		DeploymentNamespace: ControllerNamespace,
 		DeploymentName:      controllerDeploymentName,
 	}).SetupWithManager(mgr); err != nil {

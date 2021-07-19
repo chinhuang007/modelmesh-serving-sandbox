@@ -172,7 +172,7 @@ var _ = BeforeSuite(func(done Done) {
 		Scheme:              k8sManager.GetScheme(),
 		Log:                 ctrl.Log.WithName("controllers").WithName("ServingRuntime"),
 		ConfigProvider:      configProvider,
-		DeploymentName:      "wmlserving-controller",
+		DeploymentName:      "modelmesh-controller",
 		DeploymentNamespace: namespace,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())

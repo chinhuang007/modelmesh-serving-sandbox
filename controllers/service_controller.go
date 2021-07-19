@@ -71,6 +71,7 @@ type ServiceReconciler struct {
 }
 
 func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	r.Log.V(1).Info("Service reconciler called")
 	var cfg *Config
 	var changed bool
 	if req.NamespacedName == r.ConfigMapName || !r.ModelEventStream.IsWatching() {
@@ -79,9 +80,13 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		if err != nil {
 			return RequeueResult, err
 		}
+		var metricsPort uint16 = 0
+		if cfg.Metrics.Enabled {
+			metricsPort = cfg.Metrics.Port
+		}
 		changed = r.ModelMeshService.UpdateConfig(
 			cfg.InferenceServiceName, cfg.InferenceServicePort,
-			cfg.ModelMeshEndpoint, cfg.TLS.SecretName, tlsConfig, cfg.HeadlessService)
+			cfg.ModelMeshEndpoint, cfg.TLS.SecretName, tlsConfig, cfg.HeadlessService, metricsPort)
 	}
 
 	if changed || req.NamespacedName != r.ConfigMapName {
@@ -89,6 +94,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		err := r.Client.Get(ctx, r.ControllerDeployment, d)
 		if err != nil {
 			if k8serr.IsNotFound(err) {
+				// No need to delete because the Deployment is the owner
 				return ctrl.Result{}, nil
 			}
 			return RequeueResult, err
@@ -144,24 +150,14 @@ func (r *ServiceReconciler) tlsConfigFromSecret(ctx context.Context, secretName 
 }
 
 func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployment) (error, bool) {
-	commonLabelValue := "modelmesh-controller"
-	s := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      r.ModelMeshService.Name,
-			Namespace: r.ControllerDeployment.Namespace,
-			Labels: map[string]string{
-				"modelmesh-service":            r.ModelMeshService.Name,
-				"app.kubernetes.io/instance":   commonLabelValue,
-				"app.kubernetes.io/managed-by": commonLabelValue,
-				"app.kubernetes.io/name":       commonLabelValue,
-			},
-		},
-	}
-
+	s := &corev1.Service{}
+	serviceName := r.ModelMeshService.Name
 	exists := true
-	err := r.Get(ctx, types.NamespacedName{Name: r.ModelMeshService.Name, Namespace: r.ControllerDeployment.Namespace}, s)
+	err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: r.ControllerDeployment.Namespace}, s)
 	if err != nil && k8serr.IsNotFound(err) {
 		exists = false
+		s.Name = serviceName
+		s.Namespace = r.ControllerDeployment.Namespace
 	} else if err != nil {
 		return err, false
 	}
@@ -169,7 +165,7 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 	headless := r.ModelMeshService.Headless
 	if exists && (s.Spec.ClusterIP == "None") != headless {
 		r.Log.Info("Deleting/recreating Service because headlessness changed",
-			"service", r.ModelMeshService.Name, "headless", headless)
+			"service", serviceName, "headless", headless)
 		// Have to recreate since ClusterIP field is immutable
 		if err = r.Delete(ctx, s); err != nil {
 			return err, false
@@ -178,13 +174,28 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 		return nil, true
 	}
 
-	s.Spec.Selector = map[string]string{"modelmesh-service": r.ModelMeshService.Name}
+	commonLabelValue := "modelmesh-controller"
+	s.Labels = map[string]string{
+		"modelmesh-service":            serviceName,
+		"app.kubernetes.io/instance":   commonLabelValue,
+		"app.kubernetes.io/managed-by": commonLabelValue,
+		"app.kubernetes.io/name":       commonLabelValue,
+	}
+	s.Spec.Selector = map[string]string{"modelmesh-service": serviceName}
 	s.Spec.Ports = []corev1.ServicePort{
 		{
 			Name:       "grpc",
 			Port:       int32(r.ModelMeshService.Port),
 			TargetPort: intstr.FromString("grpc"),
 		},
+	}
+
+	if r.ModelMeshService.MetricsPort > 0 {
+		s.Spec.Ports = append(s.Spec.Ports, corev1.ServicePort{
+			Name:       "prometheus",
+			Port:       int32(r.ModelMeshService.MetricsPort),
+			TargetPort: intstr.FromString("prometheus"),
+		})
 	}
 
 	err = controllerutil.SetControllerReference(d, s, r.Scheme)

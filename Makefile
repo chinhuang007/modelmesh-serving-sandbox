@@ -17,7 +17,7 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 # Image URL to use all building/pushing image targets
-IMG ?= wmlserving-controller:latest
+IMG ?= modelmesh-controller:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 # Namespace to deploy model-serve into
@@ -116,7 +116,7 @@ run: build.develop
 	./scripts/develop.sh make $(RUN_ARGS)
 
 # Build the docker image
-docker-build: build 
+docker-build: build
 
 # Push the docker image
 docker-push:
