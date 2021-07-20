@@ -21,4 +21,4 @@ spec:
   path: xgboost/mushroom.json
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO

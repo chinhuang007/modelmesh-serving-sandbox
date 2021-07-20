@@ -21,4 +21,4 @@ spec:
   path: fvt/pytorch/pytorch-cifar
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

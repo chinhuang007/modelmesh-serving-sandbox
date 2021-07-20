@@ -21,4 +21,4 @@ spec:
   path: fvt/xgboost/mushroom
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

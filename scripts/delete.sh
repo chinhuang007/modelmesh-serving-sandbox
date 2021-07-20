@@ -17,7 +17,7 @@
 
 set -Eeuo pipefail
 
-path_to_configs=
+path_to_configs=config
 namespace=
 
 function showHelp() {
@@ -25,7 +25,7 @@ function showHelp() {
   echo
   echo "Flags:"
   echo "  -p, --local-config-path      Path to local model serve installation configs. Can be Model-Mesh Serving tarfile or directory."
-  echo "  -n, --namespace                Kubernetes namespace to deploy WML Serve to."
+  echo "  -n, --namespace              Kubernetes namespace where Model-Mesh Serving is deployed."
   echo
   echo "Deletes Model-Mesh Serving CRDs, controller, and built-in runtimes into specified"
   echo "Kubernetes namespaces. Will use current Kube namespace and path if"
@@ -77,3 +77,4 @@ cd ..
 
 kustomize build default | kubectl delete -f - --ignore-not-found=true
 kustomize build runtimes --load-restrictor LoadRestrictionsNone | kubectl delete -f - --ignore-not-found=true
+kubectl delete -f dependencies/quickstart.yaml --ignore-not-found=true

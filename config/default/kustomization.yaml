@@ -25,10 +25,6 @@
 #commonLabels:
 #  someName: someValue
 
-bases:
-  - ../crd
-  - ../rbac
-  - ../manager
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
 #- ../webhook
@@ -83,12 +79,18 @@ bases:
 #    name: webhook-service
 
 configMapGenerator:
-  - name: model-serving-config-defaults
-    files:
-      - config-defaults.yaml
+- files:
+  - config-defaults.yaml
+  name: model-serving-config-defaults
 
 generatorOptions:
   disableNameSuffixHash: true
 
 transformers:
-  - metadataLabelTransformer.yaml
+- metadataLabelTransformer.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../crd
+- ../rbac
+- ../manager

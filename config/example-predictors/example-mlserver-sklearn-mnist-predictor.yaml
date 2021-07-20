@@ -21,4 +21,4 @@ spec:
   path: sklearn/mnist-svm.joblib
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO

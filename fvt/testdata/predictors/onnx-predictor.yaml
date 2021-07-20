@@ -21,4 +21,4 @@ spec:
   path: fvt/onnx/onnx-mnist
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

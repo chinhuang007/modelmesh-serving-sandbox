@@ -22,4 +22,4 @@ spec:
   schemaPath: fvt/tensorflow/schema/tf-schema.json
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

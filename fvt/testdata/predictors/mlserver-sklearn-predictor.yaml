@@ -21,4 +21,4 @@ spec:
   path: fvt/sklearn/mnist-svm
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

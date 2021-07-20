@@ -21,4 +21,4 @@ spec:
   path: pytorch/cifar
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO

@@ -19,6 +19,7 @@
 set -Eeuo pipefail
 
 namespace=
+install_local_path=
 delete=false
 quickstart=false
 
@@ -27,6 +28,7 @@ function showHelp() {
   echo
   echo "Flags:"
   echo "  -n, --namespace                (required) Kubernetes namespace to deploy Model-Mesh Serving to."
+  echo "  -p, --install-config-path      Path to local model serve installation configs. Can be Model-Mesh Serving tarfile or directory."
   echo "  -d, --delete                   Delete any existing instances of Model-Mesh Serving in Kube namespace before running install, including CRDs, RBACs, controller, older CRD with ai.ibm.com api group name, etc."
   echo "  --quickstart                   Install and configure required supporting datastores in the same namespace (etcd and MinIO) - for experimentation/development"
   echo
@@ -137,6 +139,10 @@ while (($# > 0)); do
     shift
     namespace="$1"
     ;;
+  -p | --p | -install-path | --install-path | -install-config-path | --install-config-path)
+    shift
+    install_local_path="$1"
+    ;;
   -d | --d | -delete | --delete)
     delete=true
     ;;
@@ -168,8 +174,23 @@ fi
 info "Setting kube context to use namespace: $namespace"
 kubectl config set-context --current --namespace="$namespace"
 
+info "Getting Model-Mesh Serving configs"
+if [[ -n $install_local_path ]]; then
+  if [[ -f $install_local_path ]] && [[ $install_local_path =~ \.t?gz$ ]]; then
+    tar -xf "$install_local_path"
+    cd "$(basename "$(basename $install_local_path .tgz)" .tar.gz)"
+  elif [[ -d $install_local_path ]]; then
+    cd "$install_local_path"
+  else
+    die "Could not find provided path to Model-Mesh Serving install configs: $install_local_path"
+  fi
+else
+  echo "Using config directory at root of project."
+  cd config
+fi
+
 # Ensure the namespace is overridden for all the resources
-cd config/default
+cd default
 kustomize edit set namespace "$namespace"
 cd ..
 

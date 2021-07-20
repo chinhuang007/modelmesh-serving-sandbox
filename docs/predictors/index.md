@@ -12,40 +12,27 @@ Models must reside on shared storage. Currently, only S3-based storage is suppor
 
 The Model-Mesh Serving instance should be installed in the desired namespace. See [install docs](../install/install-script.md) for more details.
 
-### Deploy a sample model directly from our shared object storage
+### Deploy a sample model directly from the pre-installed local MinIO service
 
-1. Check the `storage-config` secret for access to shared COS instance
-
-A set of example models are shared via an IBM Cloud COS instance to use when getting started with Model-Mesh Serving and experimenting with the provided runtimes. Access to this COS instance is set up in the `storage-config` secret.
-
-If you used quick start install then there will be a key within the storage-config secret already configured with the name `modelmesh-example-models`.
-
-For reference the contents of the secret value for the `modelmesh-example-models` entry looks like:
-
+1. Verify the `storage-config` secret for access to the pre-configured MinIO service
+```
+kubectl get secret storage-config -o json
+```
+There should be secret key called `localMinIO` that looks like:
 ```json
 {
   "type": "s3",
-  "access_key_id": "ecb983f11822423ca9e487f898d54a8f",
-  "secret_access_key": "cdbeff6a32aef6c2374ae69eef503e6dd0c93d6a74bc2467",
-  "endpoint_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud",
-  "region": "us-south",
-  "default_bucket": "modelmesh-example-models-public"
+  "access_key": "AKIAIOSFODNN7EXAMPLE",
+  "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+  "endpoint_url": "http://minio:9000",
+  "default_bucket": "modelmesh-example-models"
 }
 ```
-
-<InlineNotification>
-
-**Note** After updating the storage config secret, there may be a delay of up to 2 minutes until the change is picked up. You should take this into account when creating/updating Predictors that use storage keys which have just been added or updated - they may fail to load otherwise.
-
-</InlineNotification>
-
-For more details of configuring model storage, see the [Setup Storage](setup-storage.md) page.
-
 2. Create a Predictor Custom Resource to serve the sample model
 
 The `config/example-predictors` directory contains Predictor manifests for many of the example models. For a list of available models, see the [example models documentation](../example-models#available-models).
 
-Here we are deploying an sklearn model located at `sklearn/mnist-svm.joblib` within the shared COS storage.
+Here we are deploying an sklearn model located at `sklearn/mnist-svm.joblib` within the MinIO storage.
 
 ```shell
 # Pulled from sample config/example-predictors/example-mlserver-sklearn-mnist-predictor.yaml
@@ -60,12 +47,12 @@ spec:
   path: sklearn/mnist-svm.joblib
   storage:
     s3:
-      secretKey: modelmesh-example-models
+      secretKey: localMinIO
 EOF
 predictor.wmlserving.ai.ibm.com/example-mnist-predictor created
 ```
 
-Note that `modelmesh-example-models` is the name of the secret key created/verified in the previous step.
+Note that `localMinIO` is the name of the secret key verified in the previous step.
 
 For more details go to the [Predictor Spec page](predictor-spec.md).
 
@@ -102,7 +89,7 @@ Inferencing requests for this Predictor received prior to loading completion wil
 
 ## Using the deployed model
 
-Configure your gRPC client to point to address `wml-serving:8033`. Use the protobuf-based gRPC inference service defined [here](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#grpc)
+Configure your gRPC client to point to address `modelmesh-serving:8033`. Use the protobuf-based gRPC inference service defined [here](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#grpc)
 to make inference requests to the model using the `ModelInfer` RPC, setting the name of the Predictor as the `model_name` field in the `ModelInferRequest` message.
 
 Here is an example of how to do this using the command-line based [grpcurl](https://github.com/fullstorydev/grpcurl):
@@ -111,7 +98,7 @@ Port-forward to access the runtime service:
 
 ```shell
 # access via localhost:8033
-$ kubectl port-forward service/wml-serving 8033
+$ kubectl port-forward service/modelmesh-serving 8033
 Forwarding from 127.0.0.1:8033 -> 8033
 Forwarding from [::1]:8033 -> 8033
 ```
@@ -165,7 +152,7 @@ spec:
   path: tensorflow/mnist.savedmodel
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO
 EOF
 predictor.wmlserving.ai.ibm.com/example-mnist-predictor configured
 
@@ -199,4 +186,4 @@ example-mnist-predictor   sklearn   true        Loaded        Failed        Bloc
 - [Inferencing](run-inference.md)
 - [Predictor Spec](predictor-spec.md)
 
-A [Jupyter Notebook](https://github.ibm.com/kserve/modelmesh-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example can also be found in wml-serving repo.
+A [Jupyter Notebook](https://github.ibm.com/kserve/modelmesh-serving/blob/main/docs/demo/model_serve_post-install.ipynb) of the example can also be found in modelmesh-serving repo.

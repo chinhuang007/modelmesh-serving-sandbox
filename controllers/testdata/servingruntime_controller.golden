@@ -12,8 +12,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: wml-serving-mlserver-0.x
-      wmlserving-service: wml-serving
+      name: modelmesh-serving-mlserver-0.x
+      modelmesh-service: modelmesh-serving
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -31,13 +31,13 @@ spec:
         prometheus.io/scrape: "true"
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: wmlserving-controller
-        app.kubernetes.io/managed-by: wmlserving-controller
-        app.kubernetes.io/name: wmlserving-controller
+        app.kubernetes.io/instance: modelmesh-controller
+        app.kubernetes.io/managed-by: modelmesh-controller
+        app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
-        name: wml-serving-mlserver-0.x
+        name: modelmesh-serving-mlserver-0.x
         network-policy: allow-egress
-        wmlserving-service: wml-serving
+        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -51,7 +51,7 @@ spec:
       containers:
       - env:
         - name: MM_SERVICE_NAME
-          value: wml-serving
+          value: modelmesh-serving
         - name: MM_SVC_GRPC_PORT
           value: "1234"
         - name: WKUBE_POD_NAME
@@ -165,21 +165,6 @@ spec:
               path: /prestop
               port: 8090
               scheme: HTTP
-        livenessProbe:
-          exec:
-            command:
-            - curl
-            - --fail
-            - --silent
-            - --show-error
-            - --max-time
-            - "9"
-            - http://localhost:8002/v2/health/live
-          failureThreshold: 3
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 10
         name: mlserver
         resources:
           limits:
@@ -279,8 +264,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: wml-serving-mlserver-0.x
-      wmlserving-service: wml-serving
+      name: modelmesh-serving-mlserver-0.x
+      modelmesh-service: modelmesh-serving
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -294,13 +279,13 @@ spec:
         productName: IBM Watson Machine Learning Core
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: wmlserving-controller
-        app.kubernetes.io/managed-by: wmlserving-controller
-        app.kubernetes.io/name: wmlserving-controller
+        app.kubernetes.io/instance: modelmesh-controller
+        app.kubernetes.io/managed-by: modelmesh-controller
+        app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
-        name: wml-serving-mlserver-0.x
+        name: modelmesh-serving-mlserver-0.x
         network-policy: allow-egress
-        wmlserving-service: wml-serving
+        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -314,7 +299,7 @@ spec:
       containers:
       - env:
         - name: MM_SERVICE_NAME
-          value: wml-serving
+          value: modelmesh-serving
         - name: MM_SVC_GRPC_PORT
           value: "1234"
         - name: WKUBE_POD_NAME
@@ -425,21 +410,6 @@ spec:
               path: /prestop
               port: 8090
               scheme: HTTP
-        livenessProbe:
-          exec:
-            command:
-            - curl
-            - --fail
-            - --silent
-            - --show-error
-            - --max-time
-            - "9"
-            - http://localhost:8002/v2/health/live
-          failureThreshold: 3
-          initialDelaySeconds: 5
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 10
         name: mlserver
         resources:
           limits:
@@ -539,8 +509,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: wml-serving-tfserving-1.15
-      wmlserving-service: wml-serving
+      name: modelmesh-serving-tfserving-1.15
+      modelmesh-service: modelmesh-serving
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -554,13 +524,13 @@ spec:
         productName: IBM Watson Machine Learning Core
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: wmlserving-controller
-        app.kubernetes.io/managed-by: wmlserving-controller
-        app.kubernetes.io/name: wmlserving-controller
+        app.kubernetes.io/instance: modelmesh-controller
+        app.kubernetes.io/managed-by: modelmesh-controller
+        app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
-        name: wml-serving-tfserving-1.15
+        name: modelmesh-serving-tfserving-1.15
         network-policy: allow-egress
-        wmlserving-service: wml-serving
+        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -574,7 +544,7 @@ spec:
       containers:
       - env:
         - name: MM_SERVICE_NAME
-          value: wml-serving
+          value: modelmesh-serving
         - name: MM_SVC_GRPC_PORT
           value: "1234"
         - name: WKUBE_POD_NAME
@@ -796,8 +766,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: wml-serving-triton-2.x
-      wmlserving-service: wml-serving
+      name: modelmesh-serving-triton-2.x
+      modelmesh-service: modelmesh-serving
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -811,13 +781,13 @@ spec:
         productName: IBM Watson Machine Learning Core
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: wmlserving-controller
-        app.kubernetes.io/managed-by: wmlserving-controller
-        app.kubernetes.io/name: wmlserving-controller
+        app.kubernetes.io/instance: modelmesh-controller
+        app.kubernetes.io/managed-by: modelmesh-controller
+        app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
-        name: wml-serving-triton-2.x
+        name: modelmesh-serving-triton-2.x
         network-policy: allow-egress
-        wmlserving-service: wml-serving
+        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -831,7 +801,7 @@ spec:
       containers:
       - env:
         - name: MM_SERVICE_NAME
-          value: wml-serving
+          value: modelmesh-serving
         - name: MM_SVC_GRPC_PORT
           value: "1234"
         - name: WKUBE_POD_NAME
@@ -1050,8 +1020,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: wml-serving-custom-runtime-pullerless
-      wmlserving-service: wml-serving
+      modelmesh-service: modelmesh-serving
+      name: modelmesh-serving-custom-runtime-pullerless
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -1065,13 +1035,13 @@ spec:
         productName: IBM Watson Machine Learning Core
       creationTimestamp: null
       labels:
-        app.kubernetes.io/instance: wmlserving-controller
-        app.kubernetes.io/managed-by: wmlserving-controller
-        app.kubernetes.io/name: wmlserving-controller
+        app.kubernetes.io/instance: modelmesh-controller
+        app.kubernetes.io/managed-by: modelmesh-controller
+        app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
-        name: wml-serving-custom-runtime-pullerless
+        modelmesh-service: modelmesh-serving
+        name: modelmesh-serving-custom-runtime-pullerless
         network-policy: allow-egress
-        wmlserving-service: wml-serving
     spec:
       affinity:
         nodeAffinity:
@@ -1085,7 +1055,7 @@ spec:
       containers:
       - env:
         - name: MM_SERVICE_NAME
-          value: wml-serving
+          value: modelmesh-serving
         - name: MM_SVC_GRPC_PORT
           value: "1234"
         - name: WKUBE_POD_NAME

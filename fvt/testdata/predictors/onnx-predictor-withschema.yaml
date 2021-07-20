@@ -22,4 +22,4 @@ spec:
   schemaPath: fvt/onnx/schema/schema.json
   storage:
     s3:
-      secretKey: wml-serving-models
+      secretKey: localMinIO

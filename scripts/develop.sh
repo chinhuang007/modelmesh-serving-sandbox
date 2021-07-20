@@ -27,7 +27,7 @@ usage() {
   exit 1
 }
 
-ARTIFACTORY_REGISTRY="kserve"
+REGISTRY="kserve"
 PARAMS=""
 CONTROLLER_IMG="modelmesh-controller"
 
@@ -76,9 +76,5 @@ fi
 # Run the develop container with local source mounted in
 docker run --rm \
   "${docker_run_args[@]}" \
-  --env ARTIFACTORY_USER \
-  --env ARTIFACTORY_APIKEY=$ARTIFACTORY_PASSWORD \
-  --env OCP_ADDRESS \
-  --env OCP_TOKEN \
   --env NAMESPACE \
-  "${ARTIFACTORY_REGISTRY}/${CONTROLLER_IMG}-develop:latest" "$@"
+  "${REGISTRY}/${CONTROLLER_IMG}-develop:latest" "$@"

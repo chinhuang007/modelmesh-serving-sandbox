@@ -21,4 +21,4 @@ spec:
   path: onnx/mnist.onnx
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO

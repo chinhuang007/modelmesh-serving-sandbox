@@ -21,4 +21,4 @@ spec:
   path: lightgbm/mushroom.bst
   storage:
     s3:
-      secretKey: wml-serving-example-models
+      secretKey: localMinIO

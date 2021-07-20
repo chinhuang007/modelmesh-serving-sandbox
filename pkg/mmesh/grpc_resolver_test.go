@@ -36,7 +36,7 @@ type mockClient struct {
 func (m mockClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
 	assert.NotNil(m.t, ctx)
 	assert.IsType(m.t, &v1.Endpoints{}, obj)
-	assert.Equal(m.t, "wml-serving", key.Name)
+	assert.Equal(m.t, "modelmesh-serving", key.Name)
 	assert.Equal(m.t, "namespace", key.Namespace)
 	return m.getfunc(ctx, key, obj.(*v1.Endpoints))
 }
@@ -82,7 +82,7 @@ func Test_KubeResolver_AddRemove(t *testing.T) {
 	}
 
 	fmt.Println("Build r1")
-	r1, err := kr.Build(resolver.Target{Scheme: "kube", Endpoint: "wml-serving:8033"}, mCC, resolver.BuildOptions{})
+	r1, err := kr.Build(resolver.Target{Scheme: "kube", Endpoint: "modelmesh-serving:8033"}, mCC, resolver.BuildOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, r1)
 	assert.True(t, updateStateCalled)
@@ -101,7 +101,7 @@ func Test_KubeResolver_AddRemove(t *testing.T) {
 	}
 
 	fmt.Println("Build r2")
-	r2, err := kr.Build(resolver.Target{Scheme: "kube", Endpoint: "wml-serving:8033"}, mCC2, resolver.BuildOptions{})
+	r2, err := kr.Build(resolver.Target{Scheme: "kube", Endpoint: "modelmesh-serving:8033"}, mCC2, resolver.BuildOptions{})
 	assert.Nil(t, err)
 	assert.NotNil(t, r2)
 	assert.False(t, updateStateCalled)
@@ -133,7 +133,7 @@ func Test_KubeResolver_AddRemove(t *testing.T) {
 func reconcile(t *testing.T, kr *KubeResolver) {
 	fmt.Println("Reconcile")
 	_, err := kr.Reconcile(context.Background(), ctrl.Request{NamespacedName: types.NamespacedName{
-		Namespace: "namespace", Name: "wml-serving",
+		Namespace: "namespace", Name: "modelmesh-serving",
 	}})
 	assert.Nil(t, err)
 }

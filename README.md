@@ -6,7 +6,7 @@ Controller for common modelmesh-serving component
 
 ## Getting Started
 
-Please see our [getting started documentation](./docs/install/install-script.md) for details of how to obtain, install and use Model-Mesh Serving.
+To quickly get started with Model-Mesh Serving, check out the [Quick Start Guide](./docs/quickstart.md).
 
 For help, please open an issue in this repository.
 
@@ -45,14 +45,14 @@ These are internally-developed Java libraries used by the model-mesh component.
 
 Please read our [contributing guide](./CONTRIBUTING.md) for details on contributing, how to setup your environment to develop locally, and details on submitting pull requests.
 
-### Building
+### Building Images
 
 Sample build:
 ```bash
 GIT_COMMIT=$(git rev-parse HEAD)
 BUILD_ID=$(date '+%Y%m%d')-$(git rev-parse HEAD | cut -c -5)
 BASE_IMAGE_TAG=$(cat BASE_IMAGE_TAG | awk -F= '{print $2}')
-IMAGE_TAG_VERSION=0.0.1
+IMAGE_TAG_VERSION=0.5.1
 IMAGE_TAG=${IMAGE_TAG_VERSION}-$(git branch --show-current)_${BUILD_ID}
 DEV_IMAGE=modelmesh-serving-controller:develop
 

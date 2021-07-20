@@ -83,13 +83,15 @@ spec:
   containers:
     - args:
         - server
-        - /data
+        # - /data
+        - /data1
       env:
         - name: MINIO_ACCESS_KEY
           value: AKIAIOSFODNN7EXAMPLE
         - name: MINIO_SECRET_KEY
           value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-      image: quay.io/cloudservices/minio:latest
+      # image: quay.io/cloudservices/minio:latest
+      image: tedhtchang/minio-modelmesh-example-model:latest
       name: minio
 ---
 apiVersion: v1
@@ -103,15 +105,6 @@ stringData:
       "access_key_id": "AKIAIOSFODNN7EXAMPLE",
       "secret_access_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
       "endpoint_url": "http://minio:9000",
-      "default_bucket": "",
+      "default_bucket": "modelmesh-example-models",
       "region": "us-south"
-    }
-  modelmesh-example-models: |
-    {
-      "type": "s3",
-      "access_key_id": "ecb983f11822423ca9e487f898d54a8f",
-      "secret_access_key": "cdbeff6a32aef6c2374ae69eef503e6dd0c93d6a74bc2467",
-      "endpoint_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud",
-      "region": "us-south",
-      "default_bucket": "wml-serving-example-models-public"
     }
