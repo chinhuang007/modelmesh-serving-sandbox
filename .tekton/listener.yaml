@@ -150,9 +150,9 @@ metadata:
 spec:
   params:
     - name: repository
-      value: "https://github.com/kubeflow/kfp-tekton"
+      value: "https://github.com/kserve/modelmesh-serving"
     - name: revision
-      value: "master"
+      value: "main"
 ---
 apiVersion: tekton.dev/v1beta1
 kind: EventListener
