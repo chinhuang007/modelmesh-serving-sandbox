@@ -12,8 +12,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: modelmesh-serving-mlserver-0.x
       modelmesh-service: modelmesh-serving
+      name: modelmesh-serving-mlserver-0.x
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -35,9 +35,9 @@ spec:
         app.kubernetes.io/managed-by: modelmesh-controller
         app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
+        modelmesh-service: modelmesh-serving
         name: modelmesh-serving-mlserver-0.x
         network-policy: allow-egress
-        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -264,8 +264,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: modelmesh-serving-mlserver-0.x
       modelmesh-service: modelmesh-serving
+      name: modelmesh-serving-mlserver-0.x
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -283,9 +283,9 @@ spec:
         app.kubernetes.io/managed-by: modelmesh-controller
         app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
+        modelmesh-service: modelmesh-serving
         name: modelmesh-serving-mlserver-0.x
         network-policy: allow-egress
-        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -497,263 +497,6 @@ spec:
           secretName: secret
 status: {}
 '''
-"Sample Runtime config/samples/servingruntime_tf.yaml should be a valid runtime specification" = '''
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-spec:
-  progressDeadlineSeconds: 600
-  replicas: 2
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      component: model-mesh
-      name: modelmesh-serving-tfserving-1.15
-      modelmesh-service: modelmesh-serving
-  strategy:
-    rollingUpdate:
-      maxSurge: 75%
-      maxUnavailable: 15%
-    type: RollingUpdate
-  template:
-    metadata:
-      annotations:
-        productID: 7320f6c142574f48a46f2a8e82736ded
-        productMetric: FREE
-        productName: IBM Watson Machine Learning Core
-      creationTimestamp: null
-      labels:
-        app.kubernetes.io/instance: modelmesh-controller
-        app.kubernetes.io/managed-by: modelmesh-controller
-        app.kubernetes.io/name: modelmesh-controller
-        component: model-mesh
-        name: modelmesh-serving-tfserving-1.15
-        network-policy: allow-egress
-        modelmesh-service: modelmesh-serving
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-      containers:
-      - env:
-        - name: MM_SERVICE_NAME
-          value: modelmesh-serving
-        - name: MM_SVC_GRPC_PORT
-          value: "1234"
-        - name: WKUBE_POD_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.name
-        - name: WKUBE_POD_IPADDR
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.podIP
-        - name: MM_LOCATION
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.hostIP
-        - name: KV_STORE
-          value: etcd:/opt/watson/mmesh/etcd/etcd_connection
-        - name: MM_METRICS
-          value: disabled
-        - name: SHUTDOWN_TIMEOUT_MS
-          value: "90000"
-        - name: INTERNAL_SERVING_GRPC_SOCKET_PATH
-          value: /tmp/serve/grpc.sock
-        - name: INTERNAL_GRPC_PORT
-          value: "9103"
-        - name: MM_KVSTORE_PREFIX
-          value: mm
-        - name: MM_DEFAULT_VMODEL_OWNER
-          value: wcp
-        - name: MM_LABELS
-          value: mt:tensorflow,mt:tensorflow:1,rt:tfserving-1.15
-        - name: MM_TYPE_CONSTRAINTS_PATH
-          value: /etc/watson/mmesh/config/type_constraints
-        - name: MM_DATAPLANE_CONFIG_PATH
-          value: /etc/watson/mmesh/config/dataplane_api_config
-        image: image:tag
-        imagePullPolicy: IfNotPresent
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /opt/watson/mmesh/stop.sh
-              - wait
-        livenessProbe:
-          failureThreshold: 2
-          httpGet:
-            path: /live
-            port: 8089
-            scheme: HTTP
-          initialDelaySeconds: 90
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 5
-        name: mm
-        ports:
-        - containerPort: 1234
-          name: grpc
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /ready
-            port: 8089
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 1
-        resources:
-          limits:
-            cpu: "3"
-            memory: 448Mi
-          requests:
-            cpu: 300m
-            memory: 448Mi
-        securityContext:
-          capabilities:
-            drop:
-            - ALL
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /tmp/serve
-          name: domain-socket
-        - mountPath: /etc/watson/mmesh/config
-          name: tc-config
-        - mountPath: /opt/watson/mmesh/etcd
-          name: etcd-config
-          readOnly: true
-      - args:
-        - -c
-        - 'echo -e "model_config_list: {}" > /tmp/bootstrap_config; tensorflow_model_server
-          --port=9000 --grpc_socket_path=/tmp/serve/grpc.sock --max_num_load_retries=0
-          --model_config_file=/tmp/bootstrap_config 2>&1'
-        command:
-        - /bin/sh
-        image: us.icr.io/redsonja_hyboria/ai-foundation/tensorflow-serving:latest-version
-        imagePullPolicy: IfNotPresent
-        lifecycle:
-          preStop:
-            httpGet:
-              path: /prestop
-              port: 8090
-              scheme: HTTP
-        name: tfs
-        resources:
-          limits:
-            cpu: 7500m
-            memory: 6Gi
-          requests:
-            cpu: 1500m
-        securityContext:
-          capabilities:
-            drop:
-            - ALL
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /models
-          name: models-dir
-        - mountPath: /tmp/serve
-          name: domain-socket
-      - env:
-        - name: TFS_CONTAINER_MEM_REQ_BYTES
-          valueFrom:
-            resourceFieldRef:
-              containerName: tfs
-              divisor: "0"
-              resource: requests.memory
-        - name: TFS_MODEL_DIR
-          value: /tfmodels
-        - name: TENSORFLOW_SERVING_ADAPTER_OPTS
-          value: -Xms320m -Xmx320m
-        - name: TFS_EXPLICIT_VERSIONS
-          value: "true"
-        - name: IBM_COS_ENDPOINT
-          valueFrom:
-            secretKeyRef:
-              key: cos_endpoint
-              name: cos-config-secret
-        - name: IBM_COS_REGION
-          valueFrom:
-            secretKeyRef:
-              key: cos_region
-              name: cos-config-secret
-        - name: IBM_COS_BUCKET_NAME
-          valueFrom:
-            secretKeyRef:
-              key: bucket_name
-              name: cos-config-secret
-        - name: IBM_COS_AWS_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              key: cos_aws_access_key
-              name: cos-config-secret
-        - name: IBM_COS_AWS_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              key: cos_aws_secret_key
-              name: cos-config-secret
-        image: us.icr.io/redsonja_hyboria/ai-foundation/model-mesh-tfsa:latest-version
-        imagePullPolicy: IfNotPresent
-        lifecycle:
-          preStop:
-            httpGet:
-              path: /prestop
-              port: 8090
-              scheme: HTTP
-        name: tfsa
-        resources:
-          limits:
-            cpu: "2"
-            memory: 512Mi
-          requests:
-            cpu: 400m
-        securityContext:
-          capabilities:
-            drop:
-            - ALL
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /models
-          name: models-dir
-        - mountPath: /tmp/serve
-          name: domain-socket
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 90
-      volumes:
-      - emptyDir:
-          sizeLimit: 9984Mi
-        name: models-dir
-      - emptyDir: {}
-        name: domain-socket
-      - configMap:
-          defaultMode: 420
-          name: tc-config
-        name: tc-config
-      - name: etcd-config
-        secret:
-          defaultMode: 420
-          secretName: secret
-status: {}
-'''
 "Sample Runtime config/runtimes/triton-2.x.yaml should be a valid runtime specification" = '''
 apiVersion: apps/v1
 kind: Deployment
@@ -766,8 +509,8 @@ spec:
   selector:
     matchLabels:
       component: model-mesh
-      name: modelmesh-serving-triton-2.x
       modelmesh-service: modelmesh-serving
+      name: modelmesh-serving-triton-2.x
   strategy:
     rollingUpdate:
       maxSurge: 75%
@@ -785,9 +528,9 @@ spec:
         app.kubernetes.io/managed-by: modelmesh-controller
         app.kubernetes.io/name: modelmesh-controller
         component: model-mesh
+        modelmesh-service: modelmesh-serving
         name: modelmesh-serving-triton-2.x
         network-policy: allow-egress
-        modelmesh-service: modelmesh-serving
     spec:
       affinity:
         nodeAffinity:
@@ -893,9 +636,10 @@ spec:
           readOnly: true
       - args:
         - -c
-        - 'mkdir -p /models/_triton_models; exec tritonserver "--model-store=/models/_triton_models"
-          "--model-control-mode=explicit" "--strict-model-config=false" "--strict-readiness=false"
-          "--allow-http=true" '
+        - 'mkdir -p /models/_triton_models; chmod -R 777 /models/_triton_models; exec
+          tritonserver "--model-repository=/models/_triton_models" "--model-control-mode=explicit"
+          "--strict-model-config=false" "--strict-readiness=false" "--allow-http=true"
+          "--allow-sagemaker=false" '
         command:
         - /bin/sh
         image: tritonserver-2:replace

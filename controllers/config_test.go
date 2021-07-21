@@ -56,7 +56,7 @@ func TestNewMergedConfigFromStringImage(t *testing.T) {
 	testCases := []testCase{
 		{
 			configYaml:                 "storageHelperImage:\n  tag: tag-override",
-			expectedStorageHelperImage: "wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/model-serving-runtime-adapter:tag-override",
+			expectedStorageHelperImage: "pvaneckw/mm-adapter:tag-override",
 		},
 		{
 			configYaml:             "modelMeshImage:\n  name: model-mesh\n  tag: some-mm-tag",
