@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: lightgbm
-  path: fvt/lightgbm/mushroom
+  path: lightgbm/mushroom
   storage:
     s3:
       secretKey: localMinIO

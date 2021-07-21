@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: xgboost
-  path: fvt/xgboost/mushroom
+  path: xgboost/mushroom
   storage:
     s3:
       secretKey: localMinIO

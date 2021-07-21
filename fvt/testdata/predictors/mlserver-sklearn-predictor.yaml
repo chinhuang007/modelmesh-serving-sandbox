@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: sklearn
-  path: fvt/sklearn/mnist-svm
+  path: sklearn/mnist-svm
   storage:
     s3:
       secretKey: localMinIO

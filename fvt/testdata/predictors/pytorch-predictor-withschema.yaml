@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: pytorch
-  path: fvt/pytorch/pytorch-cifar-schema
+  path: pytorch/pytorch-cifar-schema
   schemaPath: fvt/pytorch/schema/schema.json
   storage:
     s3:
