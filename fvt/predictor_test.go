@@ -1319,7 +1319,6 @@ var _ = Describe("Predictor", func() {
 		})
 
 		AfterEach(func() {
-			var err error
 			fvtClient.DisconnectFromModelMesh()
 			if CurrentGinkgoTestDescription().Failed {
 				fvtClient.PrintPredictors()
