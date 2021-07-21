@@ -66,7 +66,7 @@ var _ = BeforeSuite(func() {
 	// confirm 3 serving runtimes exist
 	list, err := fvtClient.ListServingRuntimes(metav1.ListOptions{})
 	Expect(err).ToNot(HaveOccurred())
-	Expect(list.Items).To(HaveLen(3))
+	Expect(list.Items).To(HaveLen(2))
 
 	// cleanup any predictors if they exist
 	fvtClient.DeleteAllPredictors()

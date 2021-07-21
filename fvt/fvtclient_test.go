@@ -97,7 +97,7 @@ const (
 	ServingRuntimeKind = "ServingRuntime"
 	PredictorKind      = "Predictor"
 	ConfigMapKind      = "ConfigMap"
-	TestNamespace      = "model-serving"
+	TestNamespace      = "modelmesh-serving"
 	TestServiceName    = "modelmesh-serving"
 )
 

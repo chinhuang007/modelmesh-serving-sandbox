@@ -53,7 +53,6 @@ func waitForAndGetRuntimeDeployment(runtimeName string) *appsv1.Deployment {
 
 var _ = Describe("Sample Runtime", func() {
 	samplesToTest := []string{
-		"config/samples/servingruntime_tf.yaml",
 		"config/runtimes/mlserver-0.x.yaml",
 		"config/runtimes/triton-2.x.yaml",
 	}

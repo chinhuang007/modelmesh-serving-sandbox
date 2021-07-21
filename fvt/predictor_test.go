@@ -102,22 +102,6 @@ var predictorsArray = []FVTPredictor{
 		differentPredictorFilename: "onnx-predictor.yaml",
 	},
 	{
-		predictorName:              "spark",
-		predictorFilename:          "spark-predictor.yaml",
-		currentModelPath:           "fvt/spark/simple-text-classification/classification-model.tar.gz",
-		updatedModelPath:           "fvt/spark/simple-text-classification-dup/classification-model.tar.gz",
-		differentPredictorName:     "onnx",
-		differentPredictorFilename: "onnx-predictor.yaml",
-	},
-	{
-		predictorName:              "pmml",
-		predictorFilename:          "pmml-predictor.yaml",
-		currentModelPath:           "fvt/pmml/drug-prediction/drug-model.xml",
-		updatedModelPath:           "fvt/pmml/drug-prediction-dup/drug-model.xml",
-		differentPredictorName:     "onnx",
-		differentPredictorFilename: "onnx-predictor.yaml",
-	},
-	{
 		predictorName:              "mleap",
 		predictorFilename:          "mleap-predictor.yaml",
 		currentModelPath:           "fvt/mleap/airbnb.model.lr.zip",
@@ -1310,12 +1294,6 @@ var _ = Describe("Predictor", func() {
 			list := fvtClient.ListPredictors(metav1.ListOptions{})
 			Expect(list.Items).To(BeEmpty())
 
-			// create new msp-ml-server runtime
-			// Predictor created in this test is associated with this SR because of the label,
-			// and predictor waits for deployments of this newly created runtime before loading.
-			err = fvtClient.RunKubectl("create", "-f", runtimeSamplesPath+"uds-msp-ml-server-0.x.yaml")
-			Expect(err).ToNot(HaveOccurred())
-
 			// ensure a stable deploy state
 			watcherDeploys := fvtClient.StartWatchingDeploys()
 			defer watcherDeploys.Stop()
@@ -1347,9 +1325,6 @@ var _ = Describe("Predictor", func() {
 				fvtClient.PrintPredictors()
 				fvtClient.TailPodLogs(startTime)
 			}
-			// deleting msp runtime that was created for this test case
-			err = fvtClient.RunKubectl("delete", "-f", runtimeSamplesPath+"uds-msp-ml-server-0.x.yaml")
-			Expect(err).ToNot(HaveOccurred())
 			fvtClient.DeleteAllPredictors()
 		})
 
