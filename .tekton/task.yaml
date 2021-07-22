@@ -35,7 +35,7 @@ spec:
     mountPath: /artifacts
   steps:
     - name: run-go-unittests
-      image: registry.access.redhat.com/ubi8/ubi-minimal:8.4
+      image: docker.io/aipipeline/pipeline-base-image:1.2
       env:
         - name: DOCKER_USERNAME
           value: $(params.docker-username)
