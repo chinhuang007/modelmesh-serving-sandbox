@@ -42,7 +42,7 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 				// since we list existing deploys Replicas should never be nil
 				replicas = *d.Spec.Replicas
 			} else {
-				Expect(*d.Spec.Replicas).To(BeEquivalentTo(0))
+				Expect(*d.Spec.Replicas).To(BeEquivalentTo(int32(0)))
 			}
 		}
 		return replicas
@@ -164,7 +164,7 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 			pollIntervalSeconds := 1
 			Consistently(func() int32 {
 				return checkDeploymentState()
-			}, pollTimeoutSeconds, pollIntervalSeconds).ShouldNot(BeEquivalentTo(0))
+			}, pollTimeoutSeconds, pollIntervalSeconds).ShouldNot(BeEquivalentTo(int32(0)))
 		})
 	})
 

@@ -81,24 +81,30 @@ var predictorsArray = []FVTPredictor{
 		predictorFilename:          "pytorch-predictor.yaml",
 		currentModelPath:           "pytorch/cifar",
 		updatedModelPath:           "pytorch/cifar-new",
-		differentPredictorName:     "onnx",
-		differentPredictorFilename: "onnx-predictor.yaml",
+		differentPredictorName:     "lightgbm",
+                differentPredictorFilename: "lightgbm-predictor.yaml",
+		//differentPredictorName:     "onnx",
+		//differentPredictorFilename: "onnx-predictor.yaml",
 	},
 	{
 		predictorName:              "xgboost",
 		predictorFilename:          "xgboost-predictor.yaml",
 		currentModelPath:           "xgboost",
 		updatedModelPath:           "xgboost/mushroom-dup",
-		differentPredictorName:     "onnx",
-		differentPredictorFilename: "onnx-predictor.yaml",
+		differentPredictorName:     "pytorch",
+                differentPredictorFilename: "pytorch-predictor.yaml",
+		//differentPredictorName:     "onnx",
+		//differentPredictorFilename: "onnx-predictor.yaml",
 	},
 	{
 		predictorName:              "lightgbm",
 		predictorFilename:          "lightgbm-predictor.yaml",
 		currentModelPath:           "lightgbm",
 		updatedModelPath:           "lightgbm/mushroom-dup",
-		differentPredictorName:     "onnx",
-		differentPredictorFilename: "onnx-predictor.yaml",
+		differentPredictorName:     "pytorch",
+                differentPredictorFilename: "pytorch-predictor.yaml",
+		//differentPredictorName:     "onnx",
+		//differentPredictorFilename: "onnx-predictor.yaml",
 	},
 }
 
@@ -132,8 +138,8 @@ var _ = Describe("Predictor", func() {
 		var _ = Describe("create "+predictor.predictorName+" predictor", func() {
 			var predictorObject *unstructured.Unstructured
 			var predictorName string
-			//var differentPredictorObject *unstructured.Unstructured
-			//var differentPredictorName string
+			var differentPredictorObject *unstructured.Unstructured
+			var differentPredictorName string
 			var startTime string
 
 			BeforeEach(func() {
@@ -144,8 +150,8 @@ var _ = Describe("Predictor", func() {
 				// load the test predictor object
 				predictorObject = DecodeResourceFromFile(samplesPath + predictor.predictorFilename)
 				predictorName = GetString(predictorObject, "metadata", "name")
-				//differentPredictorObject = DecodeResourceFromFile(samplesPath + predictor.differentPredictorFilename)
-				//differentPredictorName = GetString(differentPredictorObject, "metadata", "name")
+				differentPredictorObject = DecodeResourceFromFile(samplesPath + predictor.differentPredictorFilename)
+				differentPredictorName = GetString(differentPredictorObject, "metadata", "name")
 
 				// update if schema is not empty
 				if predictor.schemaPath != "" {
@@ -180,7 +186,7 @@ var _ = Describe("Predictor", func() {
 
 			})
 
-			/*It("should successfully load two models of different types", func() {
+			It("should successfully load two models of different types", func() {
 				By("Creating the " + predictor.predictorName + " predictor")
 				predictorWatcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{FieldSelector: "metadata.name=" + predictorName}, defaultTimeout)
 				defer predictorWatcher.Stop()
@@ -204,7 +210,7 @@ var _ = Describe("Predictor", func() {
 				ExpectPredictorState(predictorObject, true, "Loaded", "", "UpToDate")
 				differentPredictorObject = ListPredictorsByNameExpectOne(differentPredictorName)
 				ExpectPredictorState(differentPredictorObject, true, "Loaded", "", "UpToDate") 
-			})*/
+			})
 
 			It("should successfully load two models of the same type", func() {
 				By("Creating the first " + predictor.predictorName + " predictor")
@@ -591,7 +597,7 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
-	var _ = Describe("ONNX inference", func() {
+	/* var _ = Describe("ONNX inference", func() {
 		var onnxPredictorObject *unstructured.Unstructured
 		var onnxPredictorName string
 		var startTime string
@@ -670,7 +676,7 @@ var _ = Describe("Predictor", func() {
 			Expect(inferResponse).To(BeNil())
 			Expect(err.Error()).To(ContainSubstring("INVALID_ARGUMENT: unexpected shape for input"))
 		})
-	})
+	})*/
 
 	var _ = Describe("MLServer inference", func() {
 
@@ -882,7 +888,7 @@ var _ = Describe("Predictor", func() {
 			fvtClient.DeleteAllPredictors()
 		})
 
-		It("should successfully run inference", func() {
+		/*It("should successfully run inference", func() {
 			image := LoadCifarImage(1)
 
 			inferInput := &inference.ModelInferRequest_InferInputTensor{
@@ -905,7 +911,7 @@ var _ = Describe("Predictor", func() {
 			output, err := convertRawOutputContentsTo10Floats(inferResponse.GetRawOutputContents()[0])
 			Expect(err).ToNot(HaveOccurred())
 			Expect(output[8]).To(BeEquivalentTo(7.343688488006592)) // the 9th class gets the highest activation for this net/image
-		})
+		})*/
 
 		It("should fail with an invalid input", func() {
 			image := LoadCifarImage(1)
