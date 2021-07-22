@@ -68,23 +68,14 @@ var predictorsArray = []FVTPredictor{
 		differentPredictorName:     "pytorch",
 		differentPredictorFilename: "pytorch-predictor.yaml",
 	},
-	{
-		predictorName:              "onnx",
-		predictorFilename:          "onnx-predictor.yaml",
-		currentModelPath:           "onnx",
-		updatedModelPath:           "onnx/onnx-mnist-new",
-		differentPredictorName:     "pytorch",
-		differentPredictorFilename: "pytorch-predictor.yaml",
-	},
-	{
-		predictorName:              "onnx-withschema",
-		predictorFilename:          "onnx-predictor-withschema.yaml",
-		currentModelPath:           "onnx/onnx-withschema",
-		updatedModelPath:           "onnx/onnx-withschema-new",
-		schemaPath:                 "onnx/schema/schema.json",
-		differentPredictorName:     "pytorch",
-		differentPredictorFilename: "pytorch-predictor.yaml",
-	},
+	//{
+	//	predictorName:              "onnx",
+	//	predictorFilename:          "onnx-predictor.yaml",
+	//	currentModelPath:           "onnx",
+	//	updatedModelPath:           "onnx/onnx-mnist-new",
+	//	differentPredictorName:     "pytorch",
+	//	differentPredictorFilename: "pytorch-predictor.yaml",
+	//},
 	{
 		predictorName:              "pytorch",
 		predictorFilename:          "pytorch-predictor.yaml",
@@ -141,8 +132,8 @@ var _ = Describe("Predictor", func() {
 		var _ = Describe("create "+predictor.predictorName+" predictor", func() {
 			var predictorObject *unstructured.Unstructured
 			var predictorName string
-			var differentPredictorObject *unstructured.Unstructured
-			var differentPredictorName string
+			//var differentPredictorObject *unstructured.Unstructured
+			//var differentPredictorName string
 			var startTime string
 
 			BeforeEach(func() {
@@ -153,8 +144,8 @@ var _ = Describe("Predictor", func() {
 				// load the test predictor object
 				predictorObject = DecodeResourceFromFile(samplesPath + predictor.predictorFilename)
 				predictorName = GetString(predictorObject, "metadata", "name")
-				differentPredictorObject = DecodeResourceFromFile(samplesPath + predictor.differentPredictorFilename)
-				differentPredictorName = GetString(differentPredictorObject, "metadata", "name")
+				//differentPredictorObject = DecodeResourceFromFile(samplesPath + predictor.differentPredictorFilename)
+				//differentPredictorName = GetString(differentPredictorObject, "metadata", "name")
 
 				// update if schema is not empty
 				if predictor.schemaPath != "" {
@@ -189,7 +180,7 @@ var _ = Describe("Predictor", func() {
 
 			})
 
-			It("should successfully load two models of different types", func() {
+			/*It("should successfully load two models of different types", func() {
 				By("Creating the " + predictor.predictorName + " predictor")
 				predictorWatcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{FieldSelector: "metadata.name=" + predictorName}, defaultTimeout)
 				defer predictorWatcher.Stop()
@@ -212,8 +203,8 @@ var _ = Describe("Predictor", func() {
 				predictorObject = ListPredictorsByNameExpectOne(predictorName)
 				ExpectPredictorState(predictorObject, true, "Loaded", "", "UpToDate")
 				differentPredictorObject = ListPredictorsByNameExpectOne(differentPredictorName)
-				ExpectPredictorState(differentPredictorObject, true, "Loaded", "", "UpToDate")
-			})
+				ExpectPredictorState(differentPredictorObject, true, "Loaded", "", "UpToDate") 
+			})*/
 
 			It("should successfully load two models of the same type", func() {
 				By("Creating the first " + predictor.predictorName + " predictor")
@@ -286,7 +277,7 @@ var _ = Describe("Predictor", func() {
 				fvtClient.DeleteAllPredictors()
 			})
 
-			It("should successfully update and reload the model", func() {
+			/*It("should successfully update and reload the model", func() {
 				// verify starting model path
 				obj := ListAllPredictorsExpectOne()
 				Expect(GetString(obj, "spec", "path")).To(Equal(predictor.currentModelPath))
@@ -316,7 +307,7 @@ var _ = Describe("Predictor", func() {
 				Expect(obj.GetName()).To(Equal(predictorName))
 				Expect(GetString(obj, "spec", "path")).To(Equal(predictor.updatedModelPath))
 				ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
-			})
+			})*/
 
 			It("should fail to load the target model with invalid path", func() {
 				// verify starting model path
@@ -397,7 +388,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference, update the model and run an inference again on the updated model", func() {
 			// verify starting model path
 			obj := ListAllPredictorsExpectOne()
-			Expect(GetString(obj, "spec", "path")).To(Equal("fvt/tensorflow/mnist.savedmodel"))
+			Expect(GetString(obj, "spec", "path")).To(Equal("tensorflow/mnist.savedmodel"))
 
 			// Prepare for tf inference
 			// load the first image of the mnist test set
@@ -423,7 +414,7 @@ var _ = Describe("Predictor", func() {
 			Expect(inferResponse.RawOutputContents[0][0]).To(BeEquivalentTo(7)) // this model predicts 7 for the first image
 
 			// Modify & set the predictor object with xgboost model and model type
-			SetString(predictorObject, "fvt/xgboost/mushroom", "spec", "path")
+			SetString(predictorObject, "xgboost", "spec", "path")
 			SetString(predictorObject, "xgboost", "spec", "modelType", "name")
 
 			// SECOND - update the predictor with the xgboost predictor object we prepared in the previous lines
@@ -436,7 +427,7 @@ var _ = Describe("Predictor", func() {
 			By("Waiting for the predictor to be 'Loading'")
 			loadingObj := WaitForModelStatus("targetModelState", "Loading", watcher, time.Duration(0))
 			Expect(loadingObj.GetName()).To(Equal(predictorName))
-			Expect(GetString(loadingObj, "spec", "path")).To(Equal("fvt/xgboost/mushroom"))
+			Expect(GetString(loadingObj, "spec", "path")).To(Equal("xgboost"))
 			Expect(GetString(loadingObj, "spec", "modelType", "name")).To(Equal("xgboost"))
 			ExpectPredictorState(loadingObj, true, "Loaded", "Loading", "InProgress")
 
@@ -449,7 +440,7 @@ var _ = Describe("Predictor", func() {
 			By("Listing the predictors")
 			obj = ListAllPredictorsExpectOne()
 			Expect(obj.GetName()).To(Equal(predictorName))
-			Expect(GetString(obj, "spec", "path")).To(Equal("fvt/xgboost/mushroom"))
+			Expect(GetString(obj, "spec", "path")).To(Equal("xgboost"))
 			Expect(GetString(obj, "spec", "modelType", "name")).To(Equal("xgboost"))
 			ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
 
@@ -539,7 +530,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference on an updated model", func() {
 
 			By("Updating the predictor with new model path")
-			SetString(tfPredictorObject, "fvt/tensorflow/mnist-dup.savedmodel", "spec", "path")
+			SetString(tfPredictorObject, "tensorflow/mnist-dup.savedmodel", "spec", "path")
 			fvtClient.UpdatePredictorExpectSuccess(tfPredictorObject)
 
 			By("Waiting for the model transition to complete")
@@ -939,94 +930,6 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
-	// This an inference testcase for pytorch that mandates schema in config.pbtxt
-	// However config.pbtxt (in COS) by default does not include schema section, instead
-	// schema passed in Predictor CR is updated (in config.pbtxt) after model downloaded.
-	var _ = Describe("Pytorch inference with schema", func() {
-
-		var ptPredictorObject *unstructured.Unstructured
-		var ptPredictorName string
-		var startTime string
-
-		BeforeEach(func() {
-			// verify clean state (no predictors)
-			list := fvtClient.ListPredictors(metav1.ListOptions{})
-			Expect(list.Items).To(BeEmpty())
-
-			// load the test predictor object
-			ptPredictorObject = DecodeResourceFromFile(samplesPath + "pytorch-predictor-withschema.yaml")
-			ptPredictorName = GetString(ptPredictorObject, "metadata", "name")
-
-			// create the predictor
-			watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
-			defer watcher.Stop()
-			createdPredictor := fvtClient.CreatePredictorExpectSuccess(ptPredictorObject)
-			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
-			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
-			resourceVersion := GetString(obj, "metadata", "resourceVersion")
-			SetString(ptPredictorObject, resourceVersion, "metadata", "resourceVersion")
-
-			err := fvtClient.ConnectToModelMesh(Insecure)
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		AfterEach(func() {
-			fvtClient.DisconnectFromModelMesh()
-			if CurrentGinkgoTestDescription().Failed {
-				fvtClient.PrintPredictors()
-				fvtClient.TailPodLogs(startTime)
-			}
-			fvtClient.DeleteAllPredictors()
-		})
-
-		It("should successfully run inference", func() {
-			image := LoadCifarImage(1)
-
-			inferInput := &inference.ModelInferRequest_InferInputTensor{
-				Name:     "INPUT__0",
-				Shape:    []int64{1, 3, 32, 32},
-				Datatype: "FP32",
-				Contents: &inference.InferTensorContents{Fp32Contents: image},
-			}
-			inferRequest := &inference.ModelInferRequest{
-				ModelName: ptPredictorName,
-				Inputs:    []*inference.ModelInferRequest_InferInputTensor{inferInput},
-			}
-
-			// run the inference
-			inferResponse, err := fvtClient.RunKfsInference(inferRequest)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(inferResponse).ToNot(BeNil())
-			Expect(inferResponse.ModelName).To(HavePrefix(ptPredictorName))
-			// convert raw_output_contents in bytes to array of 10 float32s
-			output, err := convertRawOutputContentsTo10Floats(inferResponse.GetRawOutputContents()[0])
-			Expect(err).ToNot(HaveOccurred())
-			Expect(output[8]).To(BeEquivalentTo(7.343688488006592)) // the 9th class gets the highest activation for this net/image
-		})
-
-		It("should fail with an invalid input", func() {
-			image := LoadCifarImage(1)
-
-			inferInput := &inference.ModelInferRequest_InferInputTensor{
-				Name:     "INPUT__0",
-				Shape:    []int64{1, 3, 16, 64}, // wrong shape
-				Datatype: "FP32",
-				Contents: &inference.InferTensorContents{Fp32Contents: image},
-			}
-			inferRequest := &inference.ModelInferRequest{
-				ModelName: ptPredictorName,
-				Inputs:    []*inference.ModelInferRequest_InferInputTensor{inferInput},
-			}
-
-			// run the inference
-			inferResponse, err := fvtClient.RunKfsInference(inferRequest)
-			Expect(err).To(HaveOccurred())
-			log.Info(err.Error())
-			Expect(err.Error()).To(ContainSubstring("INVALID_ARGUMENT: unexpected shape for input"))
-			Expect(inferResponse).To(BeNil())
-		})
-	})
 
 	var _ = Describe("LightGBM inference", func() {
 		var lightGBMPredictorObject *unstructured.Unstructured
@@ -1107,7 +1010,7 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
-	var _ = Describe("TLS XGBoost inference", func() {
+	/*var _ = Describe("TLS XGBoost inference", func() {
 		var xgboostPredictorObject *unstructured.Unstructured
 		var xgboostPredictorName string
 		var startTime string
@@ -1247,7 +1150,7 @@ var _ = Describe("Predictor", func() {
 			mmeshErr := fvtClient.ConnectToModelMesh(TLS)
 			Expect(mmeshErr).To(HaveOccurred())
 		})
-	})
+	})*/
 	// The TLS tests `Describe` block should be the last one in the list to
 	// improve efficiency of the tests. Any test after the TLS tests would need
 	// to wait for the configuration changes to roll out to all Deployments.

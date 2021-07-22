@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: onnx
-  path: onnx/onnx-mnist
+  path: onnx
   storage:
     s3:
       secretKey: localMinIO

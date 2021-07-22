@@ -18,7 +18,7 @@ metadata:
 spec:
   modelType:
     name: pytorch
-  path: pytorch/pytorch-cifar
+  path: pytorch/cifar
   storage:
     s3:
       secretKey: localMinIO
