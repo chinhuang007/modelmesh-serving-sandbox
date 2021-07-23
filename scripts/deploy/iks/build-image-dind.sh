@@ -127,6 +127,8 @@ artificat_for_next_stage() {
   grep -v -i password "${ARCHIVE_DIR}/build.properties"
 
   echo "=======================build dev image ================================"
+  pwd
+  ls -lrt
   source /scripts/build_devimage.sh
 }
 
