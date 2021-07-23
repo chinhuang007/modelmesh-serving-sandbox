@@ -128,6 +128,7 @@ artificat_for_next_stage() {
 
   echo "=======================build dev image ================================"
   source ./scripts/build_devimage.sh
+  CI=true
   source ./scripts/develop.sh make test
 }
 
