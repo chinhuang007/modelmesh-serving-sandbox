@@ -74,6 +74,9 @@ else
 fi
 
 # Run the develop container with local source mounted in
+echo ${docker_run_args[@]}
+echo $@
+
 docker run --rm \
   "${docker_run_args[@]}" \
   --env NAMESPACE \

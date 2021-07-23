@@ -132,7 +132,8 @@ artificat_for_next_stage() {
   pwd
   docker images
   ls -lrt
-  export CI=true 
+  export CI=true
+  make test
   source ./scripts/develop.sh make test
 }
 
