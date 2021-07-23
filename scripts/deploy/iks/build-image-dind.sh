@@ -131,7 +131,9 @@ artificat_for_next_stage() {
   source ./scripts/build_devimage.sh
   pwd
   docker images
-  CI=true ./scripts/develop.sh make test
+  ls -lrt
+  export CI=true 
+  source ./scripts/develop.sh make test
 }
 
 check_container_registry() {
