@@ -125,6 +125,9 @@ artificat_for_next_stage() {
   } >> "${ARCHIVE_DIR}/build.properties"
   echo "File 'build.properties' created for passing env variables to subsequent pipeline jobs:"
   grep -v -i password "${ARCHIVE_DIR}/build.properties"
+
+  echo "=======================build dev image ================================"
+  source /scripts/build_devimage.sh
 }
 
 check_container_registry() {
