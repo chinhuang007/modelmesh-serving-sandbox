@@ -133,7 +133,7 @@ artificat_for_next_stage() {
   docker images
   ls -lrt
   export CI=true
-  docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
+  docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest pwd&&ls -lrt
   #source ./scripts/develop.sh make test
 }
 
