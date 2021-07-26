@@ -134,7 +134,7 @@ artificat_for_next_stage() {
   ls -lrt
   export CI=true
   docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
-  docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest make test
+  #docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest make test
   #source ./scripts/develop.sh make test
 }
 
