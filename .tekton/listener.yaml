@@ -41,9 +41,9 @@ spec:
       default: tekton-pipeline
     - name: kubernetes-cluster
       description: cluster name
-    - name: kubeflow-ns
-      description: kubeflow namespace
-      default: kubeflow
+    - name: serving-ns
+      description: modelmesh serving namespace
+      default: modelmesh-serving
     - name: slack-webhook
       description: webhook URL
       default: ""
@@ -124,8 +124,8 @@ spec:
           value: $(params.tekton-ns)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
         - name: slack-webhook
           value: $(params.slack-webhook)
         - name: slack-channel

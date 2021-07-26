@@ -329,9 +329,9 @@ spec:
       description: the ibmcloud api key
     - name: kubernetes-cluster
       description: cluster name
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
-      default: kubeflow
+      default: modelmesh-serving
     # - name: tekton-version
     #   description: tekton version
     # - name: tekton-ns
@@ -349,7 +349,7 @@ spec:
   - name: task-pvc
     mountPath: /artifacts
   steps:
-    - name: deploy-kfp-tekton
+    - name: deploy-modelmesh-serving
       image: docker.io/aipipeline/pipeline-base-image:1.2
       env:
         - name: DOCKER_USERNAME
@@ -362,8 +362,8 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
-        - name: KUBEFLOW_NS
-          value: $(params.kubeflow-ns)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
       command: ["/bin/bash", "-c"]
       args:
         - set -ex;
@@ -380,7 +380,7 @@ spec:
       description: the ibmcloud api key
     - name: kubernetes-cluster
       description: cluster name
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
       default: kubeflow
     - name: archive-dir
@@ -408,8 +408,8 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
-        - name: KUBEFLOW_NS
-          value: $(params.kubeflow-ns)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
         - name: SLACK_WEBHOOK
           value: $(params.slack-webhook)
         - name: SLACK_CHANNEL
@@ -440,7 +440,7 @@ spec:
       description: the ibmcloud api key
     - name: kubernetes-cluster
       description: cluster name
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
       default: kubeflow
     - name: registry-url
@@ -478,8 +478,8 @@ spec:
           value: $(params.apikey)
         - name: PIPELINE_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
-        - name: KUBEFLOW_NS
-          value: $(params.kubeflow-ns)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
         - name: REGISTRY_URL
           value: $(params.registry-url)
         - name: REGISTRY_NAMESPACE
@@ -564,7 +564,7 @@ spec:
   params:
     - name: apikey
       description: the ibmcloud api key
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
       default: kubeflow
     - name: archive-dir
@@ -585,8 +585,8 @@ spec:
           value: $(params.apikey)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
-        - name: KUBEFLOW_NS
-          value: $(params.kubeflow-ns)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
       command: ["/bin/bash", "-c"]
       args:
         - set -ex;
@@ -671,7 +671,7 @@ spec:
       description: the ibmcloud api key
     - name: kubernetes-cluster
       description: cluster name
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
       default: kubeflow
     - name: resource-group
@@ -702,8 +702,8 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
-        - name: KUBEFLOW_NS
-          value: $(params.kubeflow-ns)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
         - name: REGION
           value: $(params.region)
         - name: ORG

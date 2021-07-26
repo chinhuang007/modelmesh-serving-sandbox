@@ -38,7 +38,7 @@ spec:
     - name: tekton-ns
       description: tekton namespace
       default: tekton-pipeline
-    - name: kubeflow-ns
+    - name: serving-ns
       description: kubeflow namespace
       default: kubeflow
     - name: kubernetes-cluster
@@ -138,8 +138,8 @@ spec:
           value: $(params.docker-password)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
         # - name: tekton-version
         #   value: $(params.tekton-version)
         # - name: tekton-ns
@@ -158,8 +158,8 @@ spec:
           value: $(params.apikey)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
         - name: slack-webhook
           value: $(params.slack-webhook)
         - name: slack-channel
@@ -184,8 +184,8 @@ spec:
           value: $(params.apikey)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
         - name: registry-url
           value: $(params.registry-url)
         - name: registry-namespace
@@ -216,8 +216,8 @@ spec:
           value: $(params.apikey)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
         - name: resource-group
           value: $(params.resource-group)
         - name: org
@@ -242,8 +242,8 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: apikey
           value: $(params.apikey)
-        - name: kubeflow-ns
-          value: $(params.kubeflow-ns)
+        - name: serving-ns
+          value: $(params.serving-ns)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
