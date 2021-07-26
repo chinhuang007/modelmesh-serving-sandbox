@@ -173,7 +173,7 @@ spec:
       taskRef:
         name: publish-images
       runAfter:
-        - e2e-test-fvt
+        - e2e-fvt
       when:
         - input: $(params.publish-to-dockerhub)
           operator: in
