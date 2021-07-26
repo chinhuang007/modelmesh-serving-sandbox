@@ -18,8 +18,8 @@
 set -ex
 
 # Need the following env
-# - PIPELINE_KUBERNETES_CLUSTER_NAME:   kube cluster name
-# - SERVING_NS:                        namespace for kfp-tekton, defulat: kubeflow
+# - SERVING_KUBERNETES_CLUSTER_NAME:   kube cluster name
+# - SERVING_NS:                        namespace for modelmesh-serving, defulat: modelmesh-serving
 
 MAX_RETRIES="${MAX_RETRIES:-5}"
 SLEEP_TIME="${SLEEP_TIME:-10}"
@@ -58,7 +58,7 @@ retry() {
 
 retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
 retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
-retry 3 3 ibmcloud ks cluster config -c "$PIPELINE_KUBERNETES_CLUSTER_NAME"
+retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 kubectl create ns "$SERVING_NS"
 

@@ -358,7 +358,7 @@ spec:
           value: $(params.docker-password)
         - name: IBM_CLOUD_API_KEY
           value: $(params.apikey)
-        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
@@ -368,7 +368,7 @@ spec:
       args:
         - set -ex;
           cd /artifacts && source build.properties;
-          source ./scripts/deploy/iks/deploy-kfp.sh;
+          source ./scripts/deploy/iks/deploy-mm-serving.sh;
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
@@ -404,7 +404,7 @@ spec:
       env:
         - name: IBM_CLOUD_API_KEY
           value: $(params.apikey)
-        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
@@ -476,7 +476,7 @@ spec:
       env:
         - name: IBM_CLOUD_API_KEY
           value: $(params.apikey)
-        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: SERVING_NS
           value: $(params.serving-ns)
@@ -579,7 +579,7 @@ spec:
     - name: undeploy-kfp-tekton
       image: docker.io/aipipeline/pipeline-base-image:1.2
       env:
-        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: IBM_CLOUD_API_KEY
           value: $(params.apikey)
@@ -698,7 +698,7 @@ spec:
       env:
         - name: IBM_CLOUD_API_KEY
           value: $(params.apikey)
-        - name: PIPELINE_KUBERNETES_CLUSTER_NAME
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
@@ -743,6 +743,6 @@ spec:
           # Set up kubernetes config
           retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
           retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
-          retry 3 3 ibmcloud ks cluster config -c "$PIPELINE_KUBERNETES_CLUSTER_NAME"
+          retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
           $(params.test-commands)
