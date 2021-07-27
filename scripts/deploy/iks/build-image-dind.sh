@@ -32,7 +32,7 @@ set -xe
 # ${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}
 
 # The following envs could be loaded from `build.properties` that
-# `run-test.sh` generates.
+# `run-setup.sh` generates.
 # - REGION:               cloud region (us-south as default)
 # - ORG:                  target organization (dev-advo as default)
 # - SPACE:                target space (dev as default)
