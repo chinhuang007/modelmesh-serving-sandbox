@@ -169,6 +169,19 @@ spec:
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
+    - name: undeploy
+      taskRef:
+        name: undeploy
+      params:
+        - name: kubernetes-cluster
+          value: $(params.kubernetes-cluster)
+        - name: apikey
+          value: $(params.apikey)
+        - name: serving-ns
+          value: $(params.serving-ns)
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc
     - name: publish-images
       taskRef:
         name: publish-images
@@ -208,7 +221,7 @@ spec:
       - name: task-pvc
         workspace: pipeline-pvc
   finally:
-    - name: cleanup-pipeline-loops
+    - name: cleanup-namespace
       taskRef:
         name: iks-test
       params:
@@ -231,19 +244,6 @@ spec:
             kubectl get ns
             kubectl delete ns modelmesh-serving || true
             kubectl delete job --all -n default || true
-      workspaces:
-      - name: task-pvc
-        workspace: pipeline-pvc
-    - name: undeploy
-      taskRef:
-        name: undeploy
-      params:
-        - name: kubernetes-cluster
-          value: $(params.kubernetes-cluster)
-        - name: apikey
-          value: $(params.apikey)
-        - name: serving-ns
-          value: $(params.serving-ns)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
