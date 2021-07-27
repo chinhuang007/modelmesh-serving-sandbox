@@ -55,6 +55,11 @@ retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
 retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
 retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
+# Update kustomize
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+mv kustomize /usr/local/bin/kustomize
+
+# Delete CRDs, controller, and built-in runtimes
 ./scripts/delete.sh --namespace "$SERVING_NS"
 
 kubectl delete ns "$SERVING_NS"

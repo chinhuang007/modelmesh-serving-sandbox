@@ -97,7 +97,7 @@ spec:
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
-    - name: build-images-artifact
+    - name: build-image
       taskRef:
         name: build-images-dnd
       runAfter:
@@ -128,7 +128,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - build-images-artifact
+        - build-image
       params:
         - name: apikey
           value: $(params.apikey)
@@ -184,7 +184,7 @@ spec:
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
-    - name: publish-images
+    - name: publish-image
       taskRef:
         name: publish-images
       runAfter:
