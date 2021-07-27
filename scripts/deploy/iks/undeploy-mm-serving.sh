@@ -18,10 +18,11 @@
 set -ex
 
 # Need the following env var
+# - SERVING_KUBERNETES_CLUSTER_NAME:   kube cluster name
 # - SERVING_NS:                        namespace for modelmesh-serving, defulat: modelmesh-serving
 
 # These env vars should come from the build.properties that `build-image.sh` generates
-echo "PIPELINE_KUBERNETES_CLUSTER_NAME=${PIPELINE_KUBERNETES_CLUSTER_NAME}"
+echo "SERVING_KUBERNETES_CLUSTER_NAME=${SERVING_KUBERNETES_CLUSTER_NAME}"
 echo "SERVING_NS=${SERVING_NS}"
 echo "MANIFEST=${MANIFEST}"
 echo "REGISTRY_URL=${REGISTRY_URL}"
@@ -52,7 +53,7 @@ retry() {
 
 retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
 retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
-retry 3 3 ibmcloud ks cluster config -c "$PIPELINE_KUBERNETES_CLUSTER_NAME"
+retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 ./scripts/delete.sh
 
