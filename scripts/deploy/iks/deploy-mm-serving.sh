@@ -77,11 +77,11 @@ fi
 
 # Check if all pods are running - allow 60 retries (10 minutes)
 ls -lrt
-which kustomize
-kustomize version
-curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-which kustomize
-kustomize version
+#which kustomize
+#kustomize version
+#curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+#which kustomize
+#kustomize version
 mv kustomize /usr/local/bin/kustomize
 kustomize version
 ./scripts/install.sh --namespace "$SERVING_NS" --quickstart
