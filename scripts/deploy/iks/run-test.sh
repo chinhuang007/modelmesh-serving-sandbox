@@ -71,6 +71,4 @@ retry() {
 retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
 retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
 
-which kustomize
-kustomize version
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash

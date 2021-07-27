@@ -75,15 +75,11 @@ then
 fi
 
 
-# Check if all pods are running - allow 60 retries (10 minutes)
-ls -lrt
-#which kustomize
-#kustomize version
-#curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-#which kustomize
-#kustomize version
+# Update kustomize
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
 mv kustomize /usr/local/bin/kustomize
-kustomize version
+
+# Check if all pods are running - allow 60 retries (10 minutes)
 ./scripts/install.sh --namespace "$SERVING_NS" --quickstart
 wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
 

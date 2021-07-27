@@ -23,6 +23,7 @@ run_flip_coin_example() {
   echo " =====   fvt sample  ====="
   #python3 samples/flip-coin/condition.py
   #retry 3 3 kfp --endpoint http://localhost:8888 pipeline upload -p e2e-flip-coin samples/flip-coin/condition.yaml || :
+  go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
   
   REV=0
   if [[ "$REV" -eq 0 ]]; then

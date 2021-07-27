@@ -428,7 +428,7 @@ spec:
       args:
         - set -ex;
           cd /artifacts && source build.properties;
-          source ./scripts/deploy/iks/e2e-test.sh;
+          source ./scripts/deploy/iks/test-fvt.sh;
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
