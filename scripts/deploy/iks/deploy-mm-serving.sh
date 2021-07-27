@@ -76,7 +76,8 @@ fi
 
 
 # Check if all pods are running - allow 60 retries (10 minutes)
-#wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
+./scripts/install.sh --namespace "$SERVING_NS" --quickstart
+wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
 
 if [[ $EXIT_CODE -ne 0 ]]
 then
@@ -86,19 +87,19 @@ fi
 
 echo "Finished modelmesh-serving deployment."
 
-echo "=========================================================="
-echo "Copy and prepare artificates for subsequent stages"
-if [[ -z "$ARCHIVE_DIR" || "$ARCHIVE_DIR" == "." ]]; then
-  echo -e "Build archive directory contains entire working directory."
-else
-  echo -e "Copying working dir into build archive directory: ${ARCHIVE_DIR} "
-  mkdir -p "$ARCHIVE_DIR"
-  find . -mindepth 1 -maxdepth 1 -not -path "./$ARCHIVE_DIR" -exec cp -R '{}' "${ARCHIVE_DIR}/" ';'
-fi
+#echo "=========================================================="
+#echo "Copy and prepare artificates for subsequent stages"
+#if [[ -z "$ARCHIVE_DIR" || "$ARCHIVE_DIR" == "." ]]; then
+#  echo -e "Build archive directory contains entire working directory."
+#else
+#  echo -e "Copying working dir into build archive directory: ${ARCHIVE_DIR} "
+#  mkdir -p "$ARCHIVE_DIR"
+#  find . -mindepth 1 -maxdepth 1 -not -path "./$ARCHIVE_DIR" -exec cp -R '{}' "${ARCHIVE_DIR}/" ';'
+#fi
 
-cp build.properties "${ARCHIVE_DIR}/" || :
+#cp build.properties "${ARCHIVE_DIR}/" || :
 
-{
-  echo "SERVING_NS=${SERVING_NS}"
-  echo "MANIFEST=${MANIFEST}"
-} >> "${ARCHIVE_DIR}/build.properties"
+#{
+#  echo "SERVING_NS=${SERVING_NS}"
+#  echo "MANIFEST=${MANIFEST}"
+#} >> "${ARCHIVE_DIR}/build.properties"
