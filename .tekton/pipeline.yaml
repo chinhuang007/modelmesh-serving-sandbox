@@ -244,7 +244,7 @@ spec:
         - name: test-commands
           value: |
             kubectl get ns
-            kubectl delete ns modelmesh-serving || true
+            kubectl delete ns "$serving-ns" || true
             kubectl delete job --all -n default || true
       workspaces:
       - name: task-pvc
