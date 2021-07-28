@@ -53,6 +53,9 @@ run_flip_coin_example() {
   echo " =====   fvt sample  ====="
   #python3 samples/flip-coin/condition.py
   #retry 3 3 kfp --endpoint http://localhost:8888 pipeline upload -p e2e-flip-coin samples/flip-coin/condition.yaml || :
+  kubectl config set-context --current --namespace=modelmesh-serving
+  kubectl get all
+  
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
 
   REV=0
