@@ -24,7 +24,7 @@ import (
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -64,9 +64,9 @@ var _ = BeforeSuite(func() {
 	log.Info("FVTClient created", "client", fvtClient)
 
 	// confirm 3 serving runtimes exist
-	list, err := fvtClient.ListServingRuntimes(metav1.ListOptions{})
-	Expect(err).ToNot(HaveOccurred())
-	Expect(list.Items).To(HaveLen(2))
+	//list, err := fvtClient.ListServingRuntimes(metav1.ListOptions{})
+	//Expect(err).ToNot(HaveOccurred())
+	//Expect(list.Items).To(HaveLen(2))
 
 	// cleanup any predictors if they exist
 	fvtClient.DeleteAllPredictors()
