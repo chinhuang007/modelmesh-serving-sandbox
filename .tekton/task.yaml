@@ -368,7 +368,7 @@ spec:
       args:
         - set -ex;
           cd /artifacts && source build.properties;
-          source ./scripts/deploy/iks/deploy-mm-serving.sh;
+          #source ./scripts/deploy/iks/deploy-mm-serving.sh;
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task

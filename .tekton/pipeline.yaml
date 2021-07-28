@@ -101,7 +101,7 @@ spec:
       taskRef:
         name: build-images-dnd
       runAfter:
-        - deploy
+        - setup-env
       params:
         - name: apikey
           value: $(params.apikey)
@@ -128,7 +128,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - run-fvt
+        - build-image
       params:
         - name: apikey
           value: $(params.apikey)
@@ -152,7 +152,7 @@ spec:
       taskRef:
         name: e2e-test
       runAfter:
-        - setup-env
+        - deploy
       params:
         - name: apikey
           value: $(params.apikey)
