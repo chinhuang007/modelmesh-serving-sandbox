@@ -45,24 +45,22 @@ retry() {
 }
 
 # fvt
-run_flip_coin_example() {
+run_fvt() {
   local REV=1
   local DURATION=$1
   shift
 
-  echo " =====   fvt sample  ====="
-  #python3 samples/flip-coin/condition.py
-  #retry 3 3 kfp --endpoint http://localhost:8888 pipeline upload -p e2e-flip-coin samples/flip-coin/condition.yaml || :
+  echo " =====   run standard fvt   ====="
   kubectl config set-context --current --namespace=modelmesh-serving
   kubectl get all
   
-  go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
-
-  REV=0
-  if [[ "$REV" -eq 0 ]]; then
-    echo " =====   flip coin sample PASSED ====="
+  #go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
+  RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
+  if [[ "$RUN_STATUS" == "PASS" ]]; then
+    REV=0
+    echo " =====   modelmesh-serving fvt PASSED ====="
   else
-    echo " =====   flip coin sample FAILED ====="
+    echo " =====   modelmesh-serving fvt FAILED ====="
   fi
 
   return "$REV"
@@ -73,7 +71,7 @@ retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP
 retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 RESULT=0
-run_flip_coin_example 20 || RESULT=$?
+run_fvt || RESULT=$?
 
 STATUS_MSG=PASSED
 if [[ "$RESULT" -ne 0 ]]; then
