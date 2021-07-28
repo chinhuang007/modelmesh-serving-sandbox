@@ -127,7 +127,7 @@ artificat_for_next_stage() {
   grep -v -i password "${ARCHIVE_DIR}/build.properties"
 
   echo "=======================build dev image ================================"
-  #source ./scripts/build_devimage.sh
+  source ./scripts/build_devimage.sh
   pwd
   docker images
   ls -lrt
