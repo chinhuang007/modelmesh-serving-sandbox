@@ -47,15 +47,16 @@ retry() {
 # fvt
 run_fvt() {
   local REV=1
-  local DURATION=$1
+  local RUN_STATUS="FAILED"
   shift
 
   echo " =====   run standard fvt   ====="
   kubectl config set-context --current --namespace=modelmesh-serving
   kubectl get all
   
-  #go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
-  RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
+  go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
+  #RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
+
   if [[ "$RUN_STATUS" == "PASS" ]]; then
     REV=0
     echo " =====   modelmesh-serving fvt PASSED ====="
@@ -71,9 +72,10 @@ retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP
 retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 RESULT=0
+STATUS_MSG=PASSED
+
 run_fvt || RESULT=$?
 
-STATUS_MSG=PASSED
 if [[ "$RESULT" -ne 0 ]]; then
   STATUS_MSG=FAILED
 fi
