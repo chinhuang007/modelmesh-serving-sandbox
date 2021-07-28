@@ -60,9 +60,9 @@ curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack
 mv kustomize /usr/local/bin/kustomize
 
 # Delete CRDs, controller, and built-in runtimes
-./scripts/delete.sh --namespace "$SERVING_NS"
+#./scripts/delete.sh --namespace "$SERVING_NS"
 
-kubectl delete ns "$SERVING_NS"
+#kubectl delete ns "$SERVING_NS"
 
 echo "Finished modelmesh-serving undeployment." 
 
