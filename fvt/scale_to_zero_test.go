@@ -49,11 +49,11 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 	}
 	expectScaledToZero := func() {
 		replicas := checkDeploymentState()
-		Expect(replicas).To(BeEquivalentTo(0))
+		Expect(replicas).To(BeEquivalentTo(int32(0)))
 	}
 	expectScaledUp := func() {
 		replicas := checkDeploymentState()
-		Expect(replicas).ToNot(BeEquivalentTo(0))
+		Expect(replicas).ToNot(BeEquivalentTo(int32(0)))
 	}
 
 	BeforeEach(func() {
