@@ -18,7 +18,7 @@ metadata:
   name: predictor-editor-role
 rules:
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - predictors
     verbs:
@@ -30,7 +30,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - predictors/status
     verbs:

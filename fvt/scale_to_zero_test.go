@@ -49,11 +49,11 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 	}
 	expectScaledToZero := func() {
 		replicas := checkDeploymentState()
-		Expect(replicas).To(BeEquivalentTo(int32(0)))
+		Expect(replicas).To(BeEquivalentTo(0))
 	}
 	expectScaledUp := func() {
 		replicas := checkDeploymentState()
-		Expect(replicas).ToNot(BeEquivalentTo(int32(0)))
+		Expect(replicas).ToNot(BeEquivalentTo(0))
 	}
 
 	BeforeEach(func() {
@@ -74,7 +74,7 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 
 		It("should scale all runtimes down", func() {
 			By("Waiting for the deployments to stabilize")
-			watcher := fvtClient.StartWatchingDeploys()
+			watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 			defer watcher.Stop()
 			WaitForStableActiveDeployState(watcher)
 
@@ -92,7 +92,7 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 
 			By("Waiting for the deployments to stabilize")
 			{
-				deployWatcher := fvtClient.StartWatchingDeploys()
+				deployWatcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 				defer deployWatcher.Stop()
 				WaitForStableActiveDeployState(deployWatcher)
 				deployWatcher.Stop()
@@ -101,10 +101,8 @@ var _ = Describe("Scaling of runtime deployments to zero", func() {
 			// check that all runtimes except the one are scaled to zero
 			expectScaledUp()
 
-			WaitForStableActiveModelState("Loading", watcher)
-
-			By("Predictor state should be changed from 'Loading' to 'Loaded' without hitting failure state")
-			obj := GetModelNextState("activeModelState", "Loading", watcher, timeForStatusToStabilize)
+			By("Waiting for the Predictor to cleanly transition to 'Loaded' state")
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Loaded"}, watcher)
 			ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
 		})
 

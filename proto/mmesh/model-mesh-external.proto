@@ -27,37 +27,37 @@ option java_multiple_files = true;
 // for managing and serving models
 service ModelMesh {
 
-    /* model lifecycle rpcs */
+  /* model lifecycle rpcs */
 
-    // Registers a trained model to this model-mesh cluster
-    rpc registerModel (RegisterModelRequest) returns (ModelStatusInfo) {}
-    // Unregisters (deletes) a model from this model-mesh cluster,
-    // has no effect if the specified model isn't found
-    rpc unregisterModel (UnregisterModelRequest) returns (UnregisterModelResponse) {}
+  // Registers a trained model to this model-mesh cluster
+  rpc registerModel (RegisterModelRequest) returns (ModelStatusInfo) {}
+  // Unregisters (deletes) a model from this model-mesh cluster,
+  // has no effect if the specified model isn't found
+  rpc unregisterModel (UnregisterModelRequest) returns (UnregisterModelResponse) {}
 
-    // Returns the status of the specified model. See the ModelStatus enum
-    rpc getModelStatus (GetStatusRequest) returns (ModelStatusInfo) {}
-    // Ensures the model with the specified id is loaded in this model-mesh cluster
-    rpc ensureLoaded (EnsureLoadedRequest) returns (ModelStatusInfo) {}
+  // Returns the status of the specified model. See the ModelStatus enum
+  rpc getModelStatus (GetStatusRequest) returns (ModelStatusInfo) {}
+  // Ensures the model with the specified id is loaded in this model-mesh cluster
+  rpc ensureLoaded (EnsureLoadedRequest) returns (ModelStatusInfo) {}
 
 
-    /* vmodel lifecycle rpcs */
+  /* vmodel lifecycle rpcs */
 
-    // Creates a new vmodel id (alias) which maps to a new or existing
-    // concrete model, or sets the target model for an existing vmodel
-    // to a new or existing concrete model
-    rpc setVModel (SetVModelRequest) returns (VModelStatusInfo) {}
+  // Creates a new vmodel id (alias) which maps to a new or existing
+  // concrete model, or sets the target model for an existing vmodel
+  // to a new or existing concrete model
+  rpc setVModel (SetVModelRequest) returns (VModelStatusInfo) {}
 
-    // Deletes a vmodel, optionally deleting any referenced concrete
-    // models at the same time
-    rpc deleteVModel (DeleteVModelRequest) returns (DeleteVModelResponse) {}
+  // Deletes a vmodel, optionally deleting any referenced concrete
+  // models at the same time
+  rpc deleteVModel (DeleteVModelRequest) returns (DeleteVModelResponse) {}
 
-    // Gets the status of a vmodel, including associated target/active model ids
-    // If the vmodel is not found, the returned VModelStatusInfo will have empty
-    // active and target model ids and an active model status of NOT_FOUND
-    rpc getVModelStatus (GetVModelStatusRequest) returns (VModelStatusInfo) {}
+  // Gets the status of a vmodel, including associated target/active model ids
+  // If the vmodel is not found, the returned VModelStatusInfo will have empty
+  // active and target model ids and an active model status of NOT_FOUND
+  rpc getVModelStatus (GetVModelStatusRequest) returns (VModelStatusInfo) {}
 
-    //TODO ensureVModelLoaded TBD
+  //TODO ensureVModelLoaded TBD
 
 }
 
@@ -174,16 +174,26 @@ message VModelStatusInfo {
     ModelStatusInfo activeModelStatus = 4;
     // status of the target model, set only if targetModelId != activeModelId
     ModelStatusInfo targetModelStatus = 5;
+    // the owner of this vmodel, if any
+    string owner = 6;
 }
 
 message DeleteVModelRequest {
     string vModelId = 1;
+
+    // if provided the specified vmodel will be deleted only if its owner matches
+    string owner = 2;
 }
 
 message DeleteVModelResponse {}
 
 message SetVModelRequest {
     string vModelId = 1;
+
+    // if set and the vmodel does not already exist, it will be created with this owner.
+    // if set and the vmodel already exists, the existing vmodel's owner must match or else
+    // the call will fail with an ALREADY_EXISTS error
+    string owner = 10;
 
     string targetModelId = 2;
 
@@ -217,4 +227,8 @@ message SetVModelRequest {
 
 message GetVModelStatusRequest {
     string vModelId = 1;
+
+    // if provided the specified vmodel must have matching owner or else the returned
+    // response will indicate not found
+    string owner = 2;
 }

@@ -25,11 +25,11 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	v1 "wmlserving.ai.ibm.com/controller/api/v1"
 
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,13 +43,14 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/yaml"
 
+	inference "github.com/kserve/modelmesh-serving/fvt/generated"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	ctrl "sigs.k8s.io/controller-runtime"
-	inference "wmlserving.ai.ibm.com/controller/fvt/generated"
 )
 
 var defaultTimeout = int64(120)
 
+const predictorTimeout = time.Second * 120
 const timeForStatusToStabilize = time.Second * 5
 
 type ModelMeshConnectionType int
@@ -67,6 +68,11 @@ var applyPatchOptions = metav1.PatchOptions{
 	Force: func() *bool { t := true; return &t }(),
 }
 
+var servingRuntimeDeploymentsListOptions = metav1.ListOptions{
+	LabelSelector:  "modelmesh-service",
+	TimeoutSeconds: &defaultTimeout,
+}
+
 type FVTClient struct {
 	dynamic.Interface
 	namespace          string
@@ -82,7 +88,7 @@ func GetFVTClient(log logr.Logger, namespace, serviceName string) (*FVTClient, e
 	if err != nil {
 		return nil, err
 	}
-	err = v1.AddToScheme(scheme.Scheme)
+	err = api.AddToScheme(scheme.Scheme)
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +109,13 @@ const (
 
 var (
 	gvrRuntime = schema.GroupVersionResource{
-		Group:    v1.GroupVersion.Group,
-		Version:  v1.GroupVersion.Version,
+		Group:    api.GroupVersion.Group,
+		Version:  api.GroupVersion.Version,
 		Resource: "servingruntimes", // this must be the plural form
 	}
 	gvrPredictor = schema.GroupVersionResource{
-		Group:    v1.GroupVersion.Group,
-		Version:  v1.GroupVersion.Version,
+		Group:    api.GroupVersion.Group,
+		Version:  api.GroupVersion.Version,
 		Resource: "predictors", // this must be the plural form
 	}
 	gvrConfigMap = schema.GroupVersionResource{
@@ -417,8 +423,7 @@ func (fvt *FVTClient) UpdateConfigMapTLS(tlsSecretName string, tlsClientAuth str
 	return obj
 }
 
-func (fvt *FVTClient) StartWatchingDeploys() watch.Interface {
-	listOptions := metav1.ListOptions{LabelSelector: "modelmesh-service", TimeoutSeconds: &defaultTimeout}
+func (fvt *FVTClient) StartWatchingDeploys(listOptions metav1.ListOptions) watch.Interface {
 	deployWatcher, err := fvt.Resource(gvrDeployment).Namespace(fvt.namespace).Watch(context.TODO(), listOptions)
 	Expect(err).ToNot(HaveOccurred())
 	return deployWatcher

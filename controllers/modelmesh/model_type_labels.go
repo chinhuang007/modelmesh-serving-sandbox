@@ -16,7 +16,7 @@ package modelmesh
 import (
 	"sort"
 
-	api "wmlserving.ai.ibm.com/controller/api/v1"
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 )
 
 type StringSet map[string]struct{}

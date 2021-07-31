@@ -30,10 +30,10 @@ usage() {
   exit 1
 }
 
-BASE_IMAGE="required"
 DOCKER_TARGET="runtime"
 DOCKER_TAG="$(git rev-parse --abbrev-ref HEAD)-$(date +"%Y%m%dT%H%M%S%Z")"
-CONTROLLER_IMG="modelmesh-controller"
+CONTROLLER_IMG="kserve/modelmesh-controller"
+DEV_IMAGE="$(cat .develop_image_name)"
 
 while (("$#")); do
   arg="$1"
@@ -85,13 +85,10 @@ if [ "${DOCKER_TARGET}" != "runtime" ]; then
   IMAGE_SUFFIX="-${DOCKER_TARGET}"
 fi
 
-BASE_TAG="$(cat BASE_IMAGE_TAG | awk -F= '{print $2}')"
-
 declare -a docker_args=(
   --target "${DOCKER_TARGET}"
   -t "${CONTROLLER_IMG}${IMAGE_SUFFIX}:${DOCKER_TAG}"
   -t "${CONTROLLER_IMG}${IMAGE_SUFFIX}:latest"
-  --build-arg "BASE_IMAGE_TAG=${BASE_TAG}"
   --build-arg "DEV_IMAGE=${DEV_IMAGE}"
 )
 

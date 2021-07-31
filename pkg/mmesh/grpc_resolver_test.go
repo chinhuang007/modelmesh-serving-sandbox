@@ -1,14 +1,16 @@
-// ------------------------------------------------------ {COPYRIGHT-TOP} ---
-// IBM Confidential
-// OCO Source Materials
-// 5900-AEO
+// Copyright 2021 IBM Corporation
 //
-// Copyright IBM Corp. 2021
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The source code for this program is not published or otherwise
-// divested of its trade secrets, irrespective of what has been
-// deposited with the U.S. Copyright Office.
-// ------------------------------------------------------ {COPYRIGHT-END} ---
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package mmesh
 
 import (
@@ -43,13 +45,13 @@ func (m mockClient) Get(ctx context.Context, key client.ObjectKey, obj client.Ob
 
 type mockCC struct {
 	t          *testing.T
-	updatefunc func(state resolver.State)
+	updatefunc func(state resolver.State) error
 }
 
-func (m mockCC) UpdateState(state resolver.State) {
+func (m mockCC) UpdateState(state resolver.State) error {
 	assert.NotNil(m.t, state)
 	fmt.Printf("updatestate called: %v\n", state)
-	m.updatefunc(state)
+	return m.updatefunc(state)
 }
 
 // Test for basic functionality
@@ -75,10 +77,11 @@ func Test_KubeResolver_AddRemove(t *testing.T) {
 
 	mCC := mockCC{}
 	updateStateCalled := false
-	mCC.updatefunc = func(state resolver.State) {
+	mCC.updatefunc = func(state resolver.State) error {
 		updateStateCalled = true
 		assert.Len(t, state.Addresses, 1)
 		assert.Equal(t, "1.2.3.4:8033", state.Addresses[0].Addr)
+		return nil
 	}
 
 	fmt.Println("Build r1")
@@ -94,10 +97,11 @@ func Test_KubeResolver_AddRemove(t *testing.T) {
 
 	mCC2 := mockCC{}
 	updateState2Called := false
-	mCC2.updatefunc = func(state resolver.State) {
+	mCC2.updatefunc = func(state resolver.State) error {
 		updateState2Called = true
 		assert.Len(t, state.Addresses, 1)
 		assert.Equal(t, "1.2.3.4:8033", state.Addresses[0].Addr)
+		return nil
 	}
 
 	fmt.Println("Build r2")

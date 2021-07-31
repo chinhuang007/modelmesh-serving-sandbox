@@ -27,7 +27,7 @@ const (
 	TLSSecretCertKey    = "tls.crt"
 	TLSSecretKeyKey     = "tls.key"
 	tlsSecretVolume     = "tls-certs"
-	tlsSecretMountPath  = "/opt/watson/mmesh/tls"
+	tlsSecretMountPath  = "/opt/kserve/mmesh/tls"
 	TLSClientCertKey    = "ca.crt"
 	tlsCertEnvVar       = "MM_TLS_KEY_CERT_PATH"
 	tlsKeyEnvVar        = "MM_TLS_PRIVATE_KEY_PATH"

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.#
 
-# Install Model-Mesh Serving CRDs, controller, and built-in runtimes into specified Kubernetes namespaces.
+# Install ModelMesh Serving CRDs, controller, and built-in runtimes into specified Kubernetes namespaces.
 # Expect cluster-admin authority and Kube cluster access to be configured prior to running.
 
 set -Eeuo pipefail
@@ -21,18 +21,22 @@ set -Eeuo pipefail
 namespace=
 install_local_path=
 delete=false
+dev_mode_logging=false
 quickstart=false
+fvt=false
 
 function showHelp() {
   echo "usage: $0 [flags]"
   echo
   echo "Flags:"
-  echo "  -n, --namespace                (required) Kubernetes namespace to deploy Model-Mesh Serving to."
-  echo "  -p, --install-config-path      Path to local model serve installation configs. Can be Model-Mesh Serving tarfile or directory."
-  echo "  -d, --delete                   Delete any existing instances of Model-Mesh Serving in Kube namespace before running install, including CRDs, RBACs, controller, older CRD with ai.ibm.com api group name, etc."
+  echo "  -n, --namespace                (required) Kubernetes namespace to deploy ModelMesh Serving to."
+  echo "  -p, --install-config-path      Path to local model serve installation configs. Can be ModelMesh Serving tarfile or directory."
+  echo "  -d, --delete                   Delete any existing instances of ModelMesh Serving in Kube namespace before running install, including CRDs, RBACs, controller, older CRD with serving.kserve.io api group name, etc."
   echo "  --quickstart                   Install and configure required supporting datastores in the same namespace (etcd and MinIO) - for experimentation/development"
+  echo "  --fvt                          Install and configure required supporting datastores in the same namespace (etcd and MinIO) - for development with fvt enabled"
+  echo "  -dev, --dev-mode-logging       Enable dev mode logging (stacktraces on warning and no sampling)"
   echo
-  echo "Installs Model-Mesh Serving CRDs, controller, and built-in runtimes into specified"
+  echo "Installs ModelMesh Serving CRDs, controller, and built-in runtimes into specified"
   echo "Kubernetes namespaces."
   echo
   echo "Expects cluster-admin authority and Kube cluster access to be configured prior to running."
@@ -146,8 +150,14 @@ while (($# > 0)); do
   -d | --d | -delete | --delete)
     delete=true
     ;;
+  -dev | --dev | -dev-mode | --dev-mode | -dev-mode-logging | --dev-mode-logging)
+    dev_mode_logging=true
+    ;;
   --quickstart)
     quickstart=true
+    ;;
+  --fvt)
+    fvt=true
     ;;
   -*)
     die "Unknown option: '${1}'"
@@ -174,7 +184,7 @@ fi
 info "Setting kube context to use namespace: $namespace"
 kubectl config set-context --current --namespace="$namespace"
 
-info "Getting Model-Mesh Serving configs"
+info "Getting ModelMesh Serving configs"
 if [[ -n $install_local_path ]]; then
   if [[ -f $install_local_path ]] && [[ $install_local_path =~ \.t?gz$ ]]; then
     tar -xf "$install_local_path"
@@ -182,7 +192,7 @@ if [[ -n $install_local_path ]]; then
   elif [[ -d $install_local_path ]]; then
     cd "$install_local_path"
   else
-    die "Could not find provided path to Model-Mesh Serving install configs: $install_local_path"
+    die "Could not find provided path to ModelMesh Serving install configs: $install_local_path"
   fi
 else
   echo "Using config directory at root of project."
@@ -196,11 +206,12 @@ cd ..
 
 # Clean up previous instances but do not fail if they do not exist
 if [[ $delete == "true" ]]; then
-  info "Deleting any previous Model-Mesh Serving instances and older CRD with ai.ibm.com api group name"
-  kubectl delete crd/predictors.ai.ibm.com --ignore-not-found=true
-  kubectl delete crd/servingruntimes.ai.ibm.com --ignore-not-found=true
+  info "Deleting any previous ModelMesh Serving instances and older CRD with serving.kserve.io api group name"
+  kubectl delete crd/predictors.serving.kserve.io --ignore-not-found=true
+  kubectl delete crd/servingruntimes.serving.kserve.io --ignore-not-found=true
   kustomize build default | kubectl delete -f - --ignore-not-found=true
   kubectl delete -f dependencies/quickstart.yaml --ignore-not-found=true
+  kubectl delete -f dependencies/fvt.yaml --ignore-not-found=true
 fi
 
 # Quickstart resources
@@ -213,8 +224,18 @@ if [[ $quickstart == "true" ]]; then
   wait_for_pods_ready "--field-selector metadata.name=minio"
 fi
 
+# FVT resources
+if [[ $fvt == "true" ]]; then
+  info "Deploying fvt resources for etcd and minio"
+  kubectl apply -f dependencies/fvt.yaml
+
+  info "Waiting for dependent pods to be up..."
+  wait_for_pods_ready "--field-selector metadata.name=etcd"
+  wait_for_pods_ready "--field-selector metadata.name=minio"
+fi
+
 if ! kubectl get secret model-serving-etcd >/dev/null; then
-  die "Could not find Etcd kube secret 'model-serving-etcd'. This is a prerequisite for running Model-Mesh Serving install."
+  die "Could not find Etcd kube secret 'model-serving-etcd'. This is a prerequisite for running ModelMesh Serving install."
 else
   echo "model-serving-etcd secret found"
 fi
@@ -223,13 +244,18 @@ info "Creating storage-config secret if it does not exist"
 kubectl create -f default/storage-secret.yaml 2>/dev/null || :
 kubectl get secret storage-config
 
-info "Installing Model-Mesh Serving CRDs, RBACs, and controller"
+info "Installing ModelMesh Serving CRDs, RBACs, and controller"
 kustomize build default | kubectl apply -f -
 
-info "Waiting for Model-Mesh Serving controller pod to be up..."
+if [[ $dev_mode_logging == "true" ]]; then
+  info "Enabling development mode logging"
+  kubectl set env deploy/modelmesh-controller DEV_MODE_LOGGING=true
+fi
+
+info "Waiting for ModelMesh Serving controller pod to be up..."
 wait_for_pods_ready "-l control-plane=modelmesh-controller"
 
-info "Installing Model-Mesh Serving built-in runtimes"
+info "Installing ModelMesh Serving built-in runtimes"
 kustomize build runtimes --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
-success "Successfully installed Model-Mesh Serving!"
+success "Successfully installed ModelMesh Serving!"

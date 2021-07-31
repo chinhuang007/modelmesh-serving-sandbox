@@ -22,10 +22,10 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	etcd3 "go.etcd.io/etcd/clientv3"
-	etcd3mirror "go.etcd.io/etcd/clientv3/mirror"
-	v3rpc "go.etcd.io/etcd/etcdserver/api/v3rpc/rpctypes"
-	etcd3kvpb "go.etcd.io/etcd/mvcc/mvccpb"
+	etcd3kv "go.etcd.io/etcd/api/v3/mvccpb"
+	etcd3rpc "go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
+	etcd3 "go.etcd.io/etcd/client/v3"
+	etcd3mirror "go.etcd.io/etcd/client/v3/mirror"
 	"google.golang.org/grpc"
 )
 
@@ -78,10 +78,10 @@ type KeyEvent struct {
 
 type KeyEventChan chan KeyEvent
 
-type KvListener func(eventType KeyEventType, key string, value *[]byte)
+type KvListener func(eventType KeyEventType, key string, value []byte)
 
 type cacheEntry struct {
-	kv    *etcd3kvpb.KeyValue
+	kv    *etcd3kv.KeyValue
 	found bool // This is false during watch phase
 }
 
@@ -94,7 +94,7 @@ func NewEtcdRangeWatcher(logger logr.Logger, etcd *etcd3.Client, prefix string) 
 	}
 }
 
-func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
+func (r *EtcdRangeWatcher) Start(ctx context.Context, keysOnly bool, listener KvListener) {
 	log := r.logger.WithValues("WatchPrefix", r.WatchPrefix)
 	prefixBytes := len([]byte(r.WatchPrefix))
 	log.Info("EtcdRangeWatcher starting")
@@ -103,8 +103,14 @@ func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
 		cache := make(map[string]cacheEntry)
 	refresh_loop:
 		for {
-			// Refresh phase
-			syncer := etcd3mirror.NewSyncer(r.etcdClient, r.WatchPrefix, 0)
+			client := r.etcdClient
+			if keysOnly {
+				rokv := &keysOnlyKvAndWatcher{KV: client.KV, Watcher: client.Watcher}
+				koClient := *client
+				koClient.KV, koClient.Watcher = rokv, rokv
+				client = &koClient
+			}
+			syncer := etcd3mirror.NewSyncer(client, r.WatchPrefix, 0)
 			getChan, errChan := syncer.SyncBase(ctx)
 			for {
 				select {
@@ -129,7 +135,7 @@ func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
 							k := key(kv, prefixBytes)
 							if current, ok := cache[k]; !ok || kv.ModRevision > current.kv.ModRevision {
 								cache[k] = cacheEntry{kv: kv, found: true}
-								listener(UPDATE, k, &kv.Value)
+								listener(UPDATE, k, kv.Value)
 							} else {
 								current.found = true
 							}
@@ -147,7 +153,7 @@ func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
 				for k, entry := range cache {
 					if !entry.found {
 						delete(cache, k)
-						listener(DELETE, k, &entry.kv.Value)
+						listener(DELETE, k, entry.kv.Value)
 					} else {
 						entry.found = false
 					}
@@ -159,17 +165,21 @@ func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
 					kv := event.Kv
 					k := key(kv, prefixBytes)
 					switch event.Type {
-					case etcd3kvpb.PUT:
+					case etcd3kv.PUT:
 						cache[k] = cacheEntry{kv: kv}
-						listener(UPDATE, k, &kv.Value)
-					case etcd3kvpb.DELETE:
-						delete(cache, k)
-						listener(DELETE, k, &kv.Value)
+						listener(UPDATE, k, kv.Value)
+					case etcd3kv.DELETE:
+						if prev, ok := cache[k]; ok {
+							delete(cache, k)
+							listener(DELETE, k, prev.kv.Value)
+						} else {
+							listener(DELETE, k, nil) // unexpected
+						}
 					}
 				}
 				err := wr.Err()
 				if err != nil {
-					if err == v3rpc.ErrCompacted {
+					if err == etcd3rpc.ErrCompacted {
 						// need to resync
 						log.Info("Received compacted error")
 						break
@@ -185,15 +195,27 @@ func (r *EtcdRangeWatcher) Start(ctx context.Context, listener KvListener) {
 	}()
 }
 
-func key(kv *etcd3kvpb.KeyValue, prefixBytes int) string {
+func key(kv *etcd3kv.KeyValue, prefixBytes int) string {
 	key := kv.Key
 	return string(key[prefixBytes:])
+}
+
+type keysOnlyKvAndWatcher struct {
+	etcd3.KV
+	etcd3.Watcher
+}
+
+func (k keysOnlyKvAndWatcher) Get(ctx context.Context, key string, opts ...etcd3.OpOption) (*etcd3.GetResponse, error) {
+	return k.KV.Get(ctx, key, append(opts, etcd3.WithKeysOnly())...)
+}
+func (k keysOnlyKvAndWatcher) Watch(ctx context.Context, key string, opts ...etcd3.OpOption) etcd3.WatchChan {
+	return k.Watcher.Watch(ctx, key, append(opts, etcd3.WithKeysOnly())...)
 }
 
 func CreateEtcdClient(etcdConfig EtcdConfig, secretData map[string][]byte, logger logr.Logger) (*etcd3.Client, error) {
 	etcdClientConfig, err := getEtcdClientConfig(etcdConfig, secretData, logger)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create etcd client config: %w", err)
+		return nil, fmt.Errorf("failed to create etcd client config: %w", err)
 	}
 
 	return etcd3.New(*etcdClientConfig)
@@ -219,7 +241,7 @@ func getEtcdClientConfig(etcdConfig EtcdConfig, secretData map[string][]byte, lo
 				logger.Info("Ignoring JSON-embedded certificate in favor of dedicated secret key", "key", etcdConfig.CertificateFile)
 			}
 			if certificate, ok = secretData[etcdConfig.CertificateFile]; !ok {
-				return nil, fmt.Errorf("Referenced TLS certificate secret key not found: %s", etcdConfig.CertificateFile)
+				return nil, fmt.Errorf("referenced TLS certificate secret key not found: %s", etcdConfig.CertificateFile)
 			}
 		}
 
@@ -238,7 +260,7 @@ func getEtcdClientConfig(etcdConfig EtcdConfig, secretData map[string][]byte, lo
 				logger.Info("Ignoring JSON-embedded client key in favor of dedicated secret key", "key", etcdConfig.ClientKeyFile)
 			}
 			if clientKey, ok = secretData[etcdConfig.ClientKeyFile]; !ok {
-				return nil, fmt.Errorf("Referenced TLS key secret key not found: %s", etcdConfig.ClientKeyFile)
+				return nil, fmt.Errorf("referenced TLS key secret key not found: %s", etcdConfig.ClientKeyFile)
 			}
 		}
 	}
@@ -251,17 +273,17 @@ func getEtcdClientConfig(etcdConfig EtcdConfig, secretData map[string][]byte, lo
 				logger.Info("Ignoring JSON-embedded client cert in favor of dedicated secret key", "key", etcdConfig.ClientCertificateFile)
 			}
 			if clientCert, ok = secretData[etcdConfig.ClientCertificateFile]; !ok {
-				return nil, fmt.Errorf("Referenced TLS client certificate secret key not found: %s", etcdConfig.ClientCertificateFile)
+				return nil, fmt.Errorf("referenced TLS client certificate secret key not found: %s", etcdConfig.ClientCertificateFile)
 			}
 		}
 	}
 
 	if (len(clientKey) > 0) != (len(clientCert) > 0) {
-		return nil, fmt.Errorf("Need to set both client_key/client_key_file and client_certificate/client_certificate_file")
+		return nil, fmt.Errorf("need to set both client_key/client_key_file and client_certificate/client_certificate_file")
 	} else if len(clientKey) > 0 {
 		tlsCert, err := tls.X509KeyPair(clientCert, clientKey)
 		if err != nil {
-			return nil, fmt.Errorf("Could not load client key pair: %w", err)
+			return nil, fmt.Errorf("could not load client key pair: %w", err)
 		}
 		tlsConfig.Certificates = []tls.Certificate{tlsCert}
 		useTLS = true

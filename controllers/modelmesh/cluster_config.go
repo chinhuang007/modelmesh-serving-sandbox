@@ -17,13 +17,13 @@ import (
 	"context"
 	"encoding/json"
 
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
 )
 
 const defaultTypeConstraint = "_default"

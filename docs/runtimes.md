@@ -1,8 +1,6 @@
----
-title: Implementing a Custom Serving Runtime
----
+# Implementing a Custom Serving Runtime
 
-Model-Mesh Serving serves different kinds of models via different _Serving Runtime_ implementations. A Serving Runtime is one or more containers which:
+ModelMesh Serving serves different kinds of models via different _Serving Runtime_ implementations. A Serving Runtime is one or more containers which:
 
 - Can dynamically load and unload models from disk into memory on demand
 - Exposes a gRPC service endpoint to serve inferencing requests for loaded models
@@ -22,11 +20,11 @@ _TODO_ add later
 
 ## Model server Management SPI
 
-Below is a description of how to implement the `mmesh.ModelRuntime` gRPC service, specified in [`model-runtime.proto`](https://github.ibm.com/ai-foundation/wml-serving/tree/main/docs/model-runtime.proto). Note that this is currently subject to change, but we will try to ensure that any changes are backwards-compatible or at least will require minimal change on the runtime side.
+Below is a description of how to implement the `mmesh.ModelRuntime` gRPC service, specified in [`model-runtime.proto`](./model-runtime.proto). Note that this is currently subject to change, but we will try to ensure that any changes are backwards-compatible or at least will require minimal change on the runtime side.
 
 ### Model sizing
 
-So that Model-Mesh Serving can decide when/where models should be loaded and unloaded, a given serving runtime implementation must communicate details of how much capacity it has to hold loaded models in memory, as well as how much each loaded model consumes.
+So that ModelMesh Serving can decide when/where models should be loaded and unloaded, a given serving runtime implementation must communicate details of how much capacity it has to hold loaded models in memory, as well as how much each loaded model consumes.
 
 Model sizes are communicated in a few different ways:
 
@@ -62,7 +60,7 @@ This is polled at the point that the main model-mesh container starts to check t
 
 The other fields in the response only need to be set in the `READY` response (and will be ignored prior to that). Once `READY` is returned, no further calls will be made unless the model-mesh container unexpectedly restarts.
 
-Currently, to ensure overall consistency of the system, it is required that runtimes purge any loaded/loading models when receiving a `runtimeStatus` call, and do not return `READY` until this is complete. Typically, it's only called during initialization prior to any load/unloadModel calls and hence this "purge" will be a no-op. But runtimes should also handle the case where there _are_ models loaded. It is likely that this requirement will be removed in a future update, but Model-Mesh Serving will remain compatible with runtimes that still include the logic.
+Currently, to ensure overall consistency of the system, it is required that runtimes purge any loaded/loading models when receiving a `runtimeStatus` call, and do not return `READY` until this is complete. Typically, it's only called during initialization prior to any load/unloadModel calls and hence this "purge" will be a no-op. But runtimes should also handle the case where there _are_ models loaded. It is likely that this requirement will be removed in a future update, but ModelMesh Serving will remain compatible with runtimes that still include the logic.
 
 ```protobuf
 message RuntimeStatusResponse {
@@ -167,11 +165,11 @@ message UnloadModelResponse {}
 
 ### Inferencing
 
-The model runtime server can expose any number of protobuf-based gRPC services on the `grpcDataEndpoint` to use for inferencing requests. Model-Mesh Serving is agnostic to specific service definitions (request/response message content), but for tensor-in/tensor-out based services it is recommended to conform to the [KFServing V2 dataplane API spec](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#grpc).
+The model runtime server can expose any number of protobuf-based gRPC services on the `grpcDataEndpoint` to use for inferencing requests. ModelMesh Serving is agnostic to specific service definitions (request/response message content), but for tensor-in/tensor-out based services it is recommended to conform to the [KFServing V2 dataplane API spec](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#grpc).
 
 A given model runtime server will be guaranteed to only receive model inferencing requests for models that had previously completed loading successfully (via a [`loadModel`](#loadmodel) request), and to have not been unloaded since.
 
-Though generally agnostic to the specific API methods, Model-Mesh Serving does need to be able to set/override the model name/id used in a given request. There are two options for obtaining the model name/id within the (which will correspond to the same id previously passed to `loadModel`):
+Though generally agnostic to the specific API methods, ModelMesh Serving does need to be able to set/override the model name/id used in a given request. There are two options for obtaining the model name/id within the (which will correspond to the same id previously passed to `loadModel`):
 
 1. Obtain from one of the `mm-model-id` or `mm-model-id-bin` gRPC metadata headers (latter required for non-ASCII UTF-8 ids). Precisely how this is done depends on the implementation language - see gRPC documentation for more information (_TODO_ specific refs/examples here).
 2. Provide the location of a specific string field within your request protobuf message (per RPC method) which will be replaced with the target model id. This is done via the `methodInfos` map in the runtime's response to the [`runtimeStatus`](#runtimestatus) RPC method. Each applicable inferencing method should have an entry whose `idInjectionPath` field is set to a list of field numbers corresponding to the heirarchy of nested messages within the request message, the last of which being the number of the string field to replace. For example, if the id is a string field in the top-level request message with number 1 (as is the case in the KFServing V2 [`ModelInferRequest`](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#inference-1)), this list would be set to just `[1]`.
@@ -185,7 +183,7 @@ Each Serving Runtime implementation is defined using the custom resource type `S
 The following is an example of a `ServingRuntime` custom resource
 
 ```yaml
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: example-runtime
@@ -200,7 +198,6 @@ spec:
   grpcDataEndpoint: "port:8090"
 ```
 
-
 ## Integrating with existing model servers
 
 The ability to specify multiple containers provides a nice way to integrate with existing model servers via an adapter pattern, as long as they provide the required capability of dynamically loading and unloading models.
@@ -209,7 +206,7 @@ The ability to specify multiple containers provides a nice way to integrate with
 
 _Note: In the above diagram, only the adapter and model server containers are explicitly specified in the ServingRuntime CR, the others are included automatically._
 
-The [built-in runtimes](https://github.ibm.com/ai-foundation/wml-serving/tree/main/config/runtimes) based on [Nvida's Triton Inferencing Server](https://github.ibm.com/ai-foundation/wml-serving/blob/main/config/runtimes/triton-2.x.yaml) and the [Seldon MLServer](https://github.com/SeldonIO/MLServer), and their corresponding adapters serve as good examples of this and can be used as a reference.
+The [built-in runtimes](https://github.com/kserve/modelmesh-serving/tree/main/config/runtimes) based on [Nvidia's Triton Inferencing Server](https://github.com/triton-inference-server/server) and the [Seldon MLServer](https://github.com/SeldonIO/MLServer), and their corresponding adapters serve as good examples of this and can be used as a reference.
 
 ## Reference
 
@@ -253,7 +250,7 @@ Several of the attributes (`grpcEndpoint`, `grpcDataEndpoint`) support either Un
 The following example demonstrates all of the possible attributes that can be set in the model serving runtime spec:
 
 ```yaml
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: example-runtime
@@ -307,15 +304,6 @@ spec:
       effect: "NoSchedule"
 ```
 
-<InlineNotification>
-
-**Note**
-
-- Prior to version `0.3.0`, please use `apiVersion: ai.ibm.com/v1alpha1` in the ServingRuntime yaml
-- Prior to version `0.5.0`, please use `apiVersion: wmlserving.ai.ibm.com/v1alpha1` in the ServingRuntime yaml
-
-</InlineNotification>
-
 ### Storage Helper
 
 Storage helper will download the model from the S3 bucket using the secret `storage-config` and place it in the local path. By default, storage helper is enabled in the serving runtime. Storage helper can be disabled by adding the configuration `storageHelper.disabled` set to `true` in serving runtime. If the storage helper is disabled, the custom runtime needs to handle access to and pulling model data from storage itself. Configuration can be passed to the runtime's pods through environment variables.
@@ -325,7 +313,7 @@ Storage helper will download the model from the S3 bucket using the secret `stor
 Consider the custom runtime defined [above](#full-example) with the following predictor:
 
 ```yaml
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: Predictor
 metadata:
   name: my-mnist-predictor

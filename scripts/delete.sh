@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.#
 
-# Deletes any existing Model-Mesh Serving CRDs, controller, and built-in runtimes into specified Kubernetes namespaces.
+# Deletes any existing ModelMesh Serving CRDs, controller, and built-in runtimes into specified Kubernetes namespaces.
 
 set -Eeuo pipefail
 
@@ -24,10 +24,10 @@ function showHelp() {
   echo "usage: $0 [flags]"
   echo
   echo "Flags:"
-  echo "  -p, --local-config-path      Path to local model serve installation configs. Can be Model-Mesh Serving tarfile or directory."
-  echo "  -n, --namespace              Kubernetes namespace where Model-Mesh Serving is deployed."
+  echo "  -p, --local-config-path      Path to local model serve installation configs. Can be ModelMesh Serving tarfile or directory."
+  echo "  -n, --namespace              Kubernetes namespace where ModelMesh Serving is deployed."
   echo
-  echo "Deletes Model-Mesh Serving CRDs, controller, and built-in runtimes into specified"
+  echo "Deletes ModelMesh Serving CRDs, controller, and built-in runtimes into specified"
   echo "Kubernetes namespaces. Will use current Kube namespace and path if"
   echo "one is not given."
   echo

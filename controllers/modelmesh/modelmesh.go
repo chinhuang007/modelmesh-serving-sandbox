@@ -19,6 +19,8 @@ import (
 	"strconv"
 
 	"github.com/go-logr/logr"
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	"github.com/kserve/modelmesh-serving/controllers/config"
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,14 +28,11 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
-	"wmlserving.ai.ibm.com/controller/controllers/config"
 )
 
 const logYaml = false
 
 const ModelMeshEtcdPrefix = "mm"
-const ModelMeshVModelOwner = "wcp" // "watson core predictor"
 
 //Models a deployment
 type Deployment struct {
@@ -41,6 +40,7 @@ type Deployment struct {
 	Name               string
 	Namespace          string
 	Owner              *api.ServingRuntime
+	DefaultVModelOwner string
 	Log                logr.Logger
 	Metrics            bool
 	PrometheusPort     uint16
@@ -62,6 +62,7 @@ type Deployment struct {
 	TLSClientAuth       string
 	EtcdSecretName      string
 	ServiceAccountName  string
+	GrpcMaxMessageSize  int
 	AnnotationConfigMap *corev1.ConfigMap
 	EnableAccessLogging bool
 	Client              client.Client
@@ -113,7 +114,6 @@ func (m *Deployment) Apply(ctx context.Context) error {
 				m.addModelTypeConstraints,
 				m.configureMMDeploymentForEtcdSecret,
 				m.configureMMDeploymentForTLSSecret,
-				m.configureRuntimeAnnotations,
 			); tErr != nil {
 				return tErr
 			}
@@ -229,20 +229,27 @@ func (m *Deployment) addMMEnvVars(deployment *appsv1.Deployment) error {
 	}
 
 	if m.EnableAccessLogging {
-		//See https://github.ibm.com/ai-foundation/model-mesh/blob/e0e8570eb9be9a0f13c9e96c2fe3a6c737c67005/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L49
+		//See https://github.com/kserve/modelmesh/blob/main/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L52
 		err := setEnvironmentVar(ModelMeshContainer, "MM_LOG_EACH_INVOKE", "true", deployment)
 		if err != nil {
 			return err
 		}
 	}
 
-	// See https://github.ibm.com/ai-foundation/model-mesh/blob/develop/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L31
+	if m.GrpcMaxMessageSize > 0 {
+		//See https://github.com/kserve/modelmesh/blob/main/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L38
+		if err := setEnvironmentVar(ModelMeshContainer, "MM_SVC_GRPC_MAX_MSG_SIZE", strconv.Itoa(m.GrpcMaxMessageSize), deployment); err != nil {
+			return err
+		}
+	}
+
+	// See https://github.com/kserve/modelmesh/blob/main/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L31
 	err := setEnvironmentVar(ModelMeshContainer, "MM_KVSTORE_PREFIX", ModelMeshEtcdPrefix, deployment)
 	if err != nil {
 		return err
 	}
-	// See https://github.ibm.com/ai-foundation/model-mesh/blob/898101124694f9eba10a34168ea7aac3a870f12e/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L65
-	err = setEnvironmentVar(ModelMeshContainer, "MM_DEFAULT_VMODEL_OWNER", ModelMeshVModelOwner, deployment)
+	// See https://github.com/kserve/modelmesh/blob/main/src/main/java/com/ibm/watson/modelmesh/ModelMeshEnvVars.java#L65
+	err = setEnvironmentVar(ModelMeshContainer, "MM_DEFAULT_VMODEL_OWNER", m.DefaultVModelOwner, deployment)
 	if err != nil {
 		return err
 	}

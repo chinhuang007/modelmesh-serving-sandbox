@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: Predictor
 metadata:
   name: onnx-test-predictor
 spec:
   modelType:
     name: onnx
-  path: onnx
+  path: fvt/onnx/onnx-mnist
   storage:
     s3:
       secretKey: localMinIO

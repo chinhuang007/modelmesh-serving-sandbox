@@ -18,7 +18,7 @@ set -euo pipefail
 
 CONTEXT_DIR=devbuild
 IMAGE_NAME=kserve/modelmesh-controller-develop
-DEV_DEPS="$0 Dockerfile.develop BASE_IMAGE_TAG go.mod go.sum .pre-commit-config.yaml"
+DEV_DEPS="$0 Dockerfile.develop go.mod go.sum .pre-commit-config.yaml"
 
 # command is shasum on osx
 SHASUM=sha1sum
@@ -32,9 +32,8 @@ if docker pull -q ${FULL_IMAGE_NAME}; then
 else
   mkdir -p $CONTEXT_DIR
   cp ${DEV_DEPS} ${CONTEXT_DIR}
-  BASE_IMAGE_TAG_ARG=$(head -n1 ${CONTEXT_DIR}/BASE_IMAGE_TAG)
-  echo "Building dev image ${FULL_IMAGE_NAME} with ${BASE_IMAGE_TAG_ARG}"
-  docker build -f ${CONTEXT_DIR}/Dockerfile.develop -t ${FULL_IMAGE_NAME} --build-arg "${BASE_IMAGE_TAG_ARG}" ${CONTEXT_DIR}
+  echo "Building dev image ${FULL_IMAGE_NAME}"
+  docker build -f ${CONTEXT_DIR}/Dockerfile.develop -t ${FULL_IMAGE_NAME} ${CONTEXT_DIR}
 fi
 echo -n "${FULL_IMAGE_NAME}" > .develop_image_name
 

@@ -46,8 +46,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	api "wmlserving.ai.ibm.com/controller/api/v1"
-	"wmlserving.ai.ibm.com/controller/controllers/modelmesh"
+	kfsv1alpha1 "github.com/kserve/modelmesh-serving/apis/kfserving/v1alpha1"
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 )
 
 // ServingRuntimeReconciler reconciles a ServingRuntime object
@@ -60,8 +61,9 @@ type ServingRuntimeReconciler struct {
 	DeploymentName      string
 	DeploymentNamespace string
 	// store some information about current runtimes for making scaling decisions
-	runtimeInfoMap      map[types.NamespacedName]*runtimeInfo
-	runtimeInfoMapMutex sync.Mutex
+	runtimeInfoMap          map[types.NamespacedName]*runtimeInfo
+	runtimeInfoMapMutex     sync.Mutex
+	EnableTrainedModelWatch bool
 }
 
 type runtimeInfo struct {
@@ -71,10 +73,10 @@ type runtimeInfo struct {
 }
 
 var builtInServerTypes = map[api.ServerType]interface{}{
-	api.MLServer: nil, api.Triton: nil, api.MLeap: nil}
+	api.MLServer: nil, api.Triton: nil}
 
-// +kubebuilder:rbac:namespace="model-serving",groups=wmlserving.ai.ibm.com,resources=servingruntimes;servingruntimes/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:namespace="model-serving",groups=wmlserving.ai.ibm.com,resources=servingruntimes/status,verbs=get;update;patch
+// +kubebuilder:rbac:namespace="model-serving",groups=serving.kserve.io,resources=servingruntimes;servingruntimes/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:namespace="model-serving",groups=serving.kserve.io,resources=servingruntimes/status,verbs=get;update;patch
 // +kubebuilder:rbac:namespace="model-serving",groups=apps,resources=deployments;deployments/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:namespace="model-serving",groups="",resources=services;configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:namespace="model-serving",groups="",resources=secrets,verbs=get;list;watch
@@ -139,6 +141,7 @@ func (r *ServingRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		Name:               req.Name,
 		Namespace:          req.Namespace,
 		Owner:              rt,
+		DefaultVModelOwner: PredictorCRSourceId,
 		Log:                log,
 		Metrics:            config.Metrics.Enabled,
 		PrometheusPort:     config.Metrics.Port,
@@ -149,6 +152,7 @@ func (r *ServingRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		PullerImageCommand: config.StorageHelperImage.Command,
 		PullerResources:    config.StorageHelperResources.ToKubernetesType(),
 		Port:               config.InferenceServicePort,
+		GrpcMaxMessageSize: config.GrpcMaxMessageSizeBytes,
 		// Replicas is set below
 		TLSSecretName:       config.TLS.SecretName,
 		TLSClientAuth:       config.TLS.ClientAuth,
@@ -303,6 +307,20 @@ func (r *ServingRuntimeReconciler) runtimeHasPredictors(ctx context.Context, rt 
 		}
 	}
 
+	if r.EnableTrainedModelWatch {
+		trainedModels := &kfsv1alpha1.TrainedModelList{}
+		err = r.Client.List(ctx, trainedModels, client.InNamespace(r.DeploymentNamespace))
+		if err != nil {
+			return false, err
+		}
+
+		for i := range trainedModels.Items {
+			if runtimeSupportsPredictor(rt, kfsv1alpha1.BuildPredictorWithBase(&trainedModels.Items[i])) {
+				return true, nil
+			}
+		}
+	}
+
 	return false, nil
 }
 
@@ -343,7 +361,7 @@ func (r *ServingRuntimeReconciler) getRuntimesSupportingPredictor(ctx context.Co
 }
 
 func (r *ServingRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		Named("ServingRuntimeReconciler").
 		For(&api.ServingRuntime{}).
 		Owns(&appsv1.Deployment{}).
@@ -366,22 +384,34 @@ func (r *ServingRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		// watch predictors and reconcile the corresponding runtime(s) it could be assigned to
 		Watches(&source.Kind{Type: &api.Predictor{}},
 			handler.EnqueueRequestsFromMapFunc(func(o client.Object) []reconcile.Request {
-				p := o.(*api.Predictor)
-				srnns, err := r.getRuntimesSupportingPredictor(context.TODO(), p)
-				if err != nil {
-					r.Log.Error(err, "Error getting runtimes that support predictor", "predictor", p.GetName())
-					return []reconcile.Request{}
-				}
-				if len(srnns) == 0 {
-					r.Log.Info("No runtime found to support predictor", "predictor", p.GetName())
-					return []reconcile.Request{}
-				}
+				return r.runtimeRequestsForPredictor(o.(*api.Predictor), "Predictor")
+			}))
 
-				requests := make([]reconcile.Request, 0, len(srnns))
-				for _, nn := range srnns {
-					requests = append(requests, reconcile.Request{NamespacedName: nn})
-				}
-				return requests
-			})).
-		Complete(r)
+	if r.EnableTrainedModelWatch {
+		builder = builder.Watches(&source.Kind{Type: &kfsv1alpha1.TrainedModel{}},
+			handler.EnqueueRequestsFromMapFunc(func(o client.Object) []reconcile.Request {
+				p := kfsv1alpha1.BuildPredictorWithBase(o.(*kfsv1alpha1.TrainedModel))
+				return r.runtimeRequestsForPredictor(p, "TrainedModel")
+			}))
+	}
+
+	return builder.Complete(r)
+}
+
+func (r *ServingRuntimeReconciler) runtimeRequestsForPredictor(p *api.Predictor, source string) []reconcile.Request {
+	srnns, err := r.getRuntimesSupportingPredictor(context.TODO(), p)
+	if err != nil {
+		r.Log.Error(err, "Error getting runtimes that support predictor", "name", p.GetName(), "source", source)
+		return []reconcile.Request{}
+	}
+	if len(srnns) == 0 {
+		r.Log.Info("No runtime found to support predictor", "name", p.GetName(), "source", source)
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, 0, len(srnns))
+	for _, nn := range srnns {
+		requests = append(requests, reconcile.Request{NamespacedName: nn})
+	}
+	return requests
 }

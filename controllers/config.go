@@ -53,10 +53,11 @@ type Config struct {
 	ModelMeshEndpoint string // For dev use only
 
 	// Service config
-	InferenceServiceName string
-	InferenceServicePort uint16
-	TLS                  TLSConfig
-	HeadlessService      bool
+	InferenceServiceName    string
+	InferenceServicePort    uint16
+	TLS                     TLSConfig
+	HeadlessService         bool
+	GrpcMaxMessageSizeBytes int
 
 	// Runtimes config
 	ModelMeshImage         ImageConfig
@@ -74,9 +75,10 @@ type Config struct {
 }
 
 type PrometheusConfig struct {
-	Enabled bool
-	Port    uint16
-	Scheme  string
+	Enabled                          bool
+	Port                             uint16
+	Scheme                           string
+	DisablePrometheusOperatorSupport bool
 }
 
 type ScaleToZeroConfig struct {
@@ -280,11 +282,13 @@ func defaults(v *viper.Viper) {
 	v.SetDefault("InferenceServicePort", 8033)
 	v.SetDefault("PodsPerRuntime", 2)
 	v.SetDefault("StorageSecretName", "storage-config")
-	v.SetDefault("ServiceAccountName", "wmlserving")
+	v.SetDefault("ServiceAccountName", "modelmesh")
 	v.SetDefault("Metrics.Port", 2112)
 	v.SetDefault("Metrics.Scheme", "https")
 	v.SetDefault("ScaleToZero.Enabled", true)
 	v.SetDefault("ScaleToZero.GracePeriodSeconds", 60)
+	// default size 16MiB in bytes
+	v.SetDefault("GrpcMaxMessageSizeBytes", 16777216)
 }
 
 func init() {

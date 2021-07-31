@@ -56,7 +56,7 @@ func TestNewMergedConfigFromStringImage(t *testing.T) {
 	testCases := []testCase{
 		{
 			configYaml:                 "storageHelperImage:\n  tag: tag-override",
-			expectedStorageHelperImage: "pvaneckw/mm-adapter:tag-override",
+			expectedStorageHelperImage: "kserve/modelmesh-runtime-adapter:tag-override",
 		},
 		{
 			configYaml:             "modelMeshImage:\n  name: model-mesh\n  tag: some-mm-tag",
@@ -159,6 +159,23 @@ metrics:
 	//Verify system config map default
 	if conf.Metrics.Enabled != expectedMetricsEnabledValue {
 		t.Fatalf("Expected MerticsEnabled=%v but found %v", expectedMetricsEnabledValue, conf.Metrics.Enabled)
+	}
+}
+
+func TestGrpcMaxMessageSize(t *testing.T) {
+	yaml := `
+grpcMaxMessageSizeBytes: 33554432`
+
+	expectedGrpcMessageSize := 33554432
+
+	conf, err := NewMergedConfigFromString(yaml)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//Verify system config map default
+	if conf.GrpcMaxMessageSizeBytes != expectedGrpcMessageSize {
+		t.Fatalf("Expected GrpcMaxMessageSizeBytes=%v but found %v", expectedGrpcMessageSize, conf.GrpcMaxMessageSizeBytes)
 	}
 }
 

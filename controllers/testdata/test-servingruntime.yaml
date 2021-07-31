@@ -1,4 +1,4 @@
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: test

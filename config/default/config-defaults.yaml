@@ -17,8 +17,8 @@
 podsPerRuntime: 2
 headlessService: true
 modelMeshImage:
-  name: pvaneckw/mm
-  tag: v02
+  name: kserve/modelmesh
+  tag: latest
 modelMeshResources:
   requests:
     cpu: "300m"
@@ -27,8 +27,8 @@ modelMeshResources:
     cpu: "3"
     memory: "448Mi"
 storageHelperImage:
-  name: pvaneckw/mm-adapter
-  tag: v01
+  name: kserve/modelmesh-runtime-adapter
+  tag: latest
   command: ["/opt/app/puller"]
 storageHelperResources:
   requests:

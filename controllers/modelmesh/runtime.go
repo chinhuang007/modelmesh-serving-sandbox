@@ -16,13 +16,12 @@ package modelmesh
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
 )
 
 const (
@@ -305,68 +304,6 @@ func (m *Deployment) addPassThroughPodFieldsToDeployment(deployment *appsv1.Depl
 	} else {
 		nodeSelectors := rt.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms
 		deployment.Spec.Template.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = append(nodeSelectors, archNodeSelector)
-	}
-
-	return nil
-}
-
-func (m *Deployment) configureRuntimeAnnotations(deployment *appsv1.Deployment) error {
-
-	// default annotations
-	// annotations data has single string with key=value values line separated
-	annotationsMap := map[string]string{
-		"productID":     "7320f6c142574f48a46f2a8e82736ded",
-		"productMetric": "FREE",
-		"productName":   "IBM Watson Machine Learning Core",
-	}
-
-	if deployment.ObjectMeta.Annotations == nil {
-		deployment.ObjectMeta.Annotations = make(map[string]string)
-	}
-
-	if deployment.Spec.Template.Annotations == nil {
-		deployment.Spec.Template.Annotations = make(map[string]string)
-	}
-
-	for key, value := range annotationsMap {
-		// set annotations for deployment
-		deployment.ObjectMeta.Annotations[key] = value
-		// set annotations for pods created by deployment
-		deployment.Spec.Template.Annotations[key] = value
-	}
-
-	// annotations from configmap
-	if m.AnnotationConfigMap == nil {
-		return nil
-	}
-
-	m.Log.Info("Found product ConfigMap for ServingRuntime, setting annotations", "configMapName", m.AnnotationConfigMap.Name)
-
-	cfg, ok := m.AnnotationConfigMap.Data["annotations"]
-	if !ok {
-		return fmt.Errorf("ConfigMap must contain a key named annotations")
-	}
-
-	properties := strings.Split(cfg, "\n")
-	for _, propStr := range properties {
-		prop := strings.Split(propStr, "=")
-		if len(prop) == 2 {
-			trimmedKey := strings.TrimSpace(strings.Trim(prop[0], "'\""))
-			trimmedVal := strings.TrimSpace(strings.Trim(prop[1], "'\""))
-			annotationsMap[trimmedKey] = trimmedVal
-		}
-	}
-	// set default value
-	if _, exists := annotationsMap["conversionRatio"]; !exists {
-		annotationsMap["conversionRatio"] = "1:1"
-	}
-
-	// assign the values retrieved from configmap to runtime deployment
-	for key, value := range annotationsMap {
-		// set annotations for deployment
-		deployment.ObjectMeta.Annotations[key] = value
-		// set annotations for pods created by deployment
-		deployment.Spec.Template.Annotations[key] = value
 	}
 
 	return nil

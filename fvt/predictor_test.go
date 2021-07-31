@@ -29,8 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/watch"
 
+	inference "github.com/kserve/modelmesh-serving/fvt/generated"
 	"github.com/moverest/mnist"
-	inference "wmlserving.ai.ibm.com/controller/fvt/generated"
 )
 
 // Predictor struct - used to store data about the predictor that FVT suite can use
@@ -53,7 +53,6 @@ type FVTPredictor struct {
 
 // relative path of the predictor sample files
 const samplesPath string = "testdata/predictors/"
-const runtimeSamplesPath string = "testdata/runtimes/"
 const userConfigMapName string = "model-serving-config"
 
 var xgBoostInputData []float32 = []float32{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0}
@@ -63,48 +62,51 @@ var predictorsArray = []FVTPredictor{
 	{
 		predictorName:              "tf",
 		predictorFilename:          "tf-predictor.yaml",
-		currentModelPath:           "tensorflow/mnist.savedmodel",
-		updatedModelPath:           "tensorflow/mnist-dup.savedmodel",
+		currentModelPath:           "fvt/tensorflow/mnist.savedmodel",
+		updatedModelPath:           "fvt/tensorflow/mnist-dup.savedmodel",
+		differentPredictorName:     "onnx",
+		differentPredictorFilename: "onnx-predictor.yaml",
+	},
+	{
+		predictorName:              "onnx",
+		predictorFilename:          "onnx-predictor.yaml",
+		currentModelPath:           "fvt/onnx/onnx-mnist",
+		updatedModelPath:           "fvt/onnx/onnx-mnist-new",
 		differentPredictorName:     "pytorch",
 		differentPredictorFilename: "pytorch-predictor.yaml",
 	},
-	//{
-	//	predictorName:              "onnx",
-	//	predictorFilename:          "onnx-predictor.yaml",
-	//	currentModelPath:           "onnx",
-	//	updatedModelPath:           "onnx/onnx-mnist-new",
-	//	differentPredictorName:     "pytorch",
-	//	differentPredictorFilename: "pytorch-predictor.yaml",
-	//},
+	{
+		predictorName:              "onnx-withschema",
+		predictorFilename:          "onnx-predictor-withschema.yaml",
+		currentModelPath:           "fvt/onnx/onnx-withschema",
+		updatedModelPath:           "fvt/onnx/onnx-withschema-new",
+		schemaPath:                 "fvt/onnx/schema/schema.json",
+		differentPredictorName:     "pytorch",
+		differentPredictorFilename: "pytorch-predictor.yaml",
+	},
 	{
 		predictorName:              "pytorch",
 		predictorFilename:          "pytorch-predictor.yaml",
-		currentModelPath:           "pytorch/cifar",
-		updatedModelPath:           "pytorch/cifar-new",
-		differentPredictorName:     "lightgbm",
-                differentPredictorFilename: "lightgbm-predictor.yaml",
-		//differentPredictorName:     "onnx",
-		//differentPredictorFilename: "onnx-predictor.yaml",
+		currentModelPath:           "fvt/pytorch/pytorch-cifar",
+		updatedModelPath:           "fvt/pytorch/pytorch-cifar-new",
+		differentPredictorName:     "onnx",
+		differentPredictorFilename: "onnx-predictor.yaml",
 	},
 	{
 		predictorName:              "xgboost",
 		predictorFilename:          "xgboost-predictor.yaml",
-		currentModelPath:           "xgboost",
-		updatedModelPath:           "xgboost/mushroom-dup",
-		differentPredictorName:     "pytorch",
-                differentPredictorFilename: "pytorch-predictor.yaml",
-		//differentPredictorName:     "onnx",
-		//differentPredictorFilename: "onnx-predictor.yaml",
+		currentModelPath:           "fvt/xgboost/mushroom",
+		updatedModelPath:           "fvt/xgboost/mushroom-dup",
+		differentPredictorName:     "onnx",
+		differentPredictorFilename: "onnx-predictor.yaml",
 	},
 	{
 		predictorName:              "lightgbm",
 		predictorFilename:          "lightgbm-predictor.yaml",
-		currentModelPath:           "lightgbm",
-		updatedModelPath:           "lightgbm/mushroom-dup",
-		differentPredictorName:     "pytorch",
-                differentPredictorFilename: "pytorch-predictor.yaml",
-		//differentPredictorName:     "onnx",
-		//differentPredictorFilename: "onnx-predictor.yaml",
+		currentModelPath:           "fvt/lightgbm/mushroom",
+		updatedModelPath:           "fvt/lightgbm/mushroom-dup",
+		differentPredictorName:     "onnx",
+		differentPredictorFilename: "onnx-predictor.yaml",
 	},
 }
 
@@ -128,7 +130,7 @@ var _ = Describe("Predictor", func() {
 		fvtClient.DeleteAllPredictors()
 
 		// ensure a stable deploy state
-		watcher := fvtClient.StartWatchingDeploys()
+		watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 		defer watcher.Stop()
 		WaitForStableActiveDeployState(watcher)
 	})
@@ -177,7 +179,8 @@ var _ = Describe("Predictor", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", watcher)
+				// TODO: "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be (see issue#994)
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 
 				By("Listing the predictor")
 				obj = ListAllPredictorsExpectOne()
@@ -201,15 +204,17 @@ var _ = Describe("Predictor", func() {
 				ExpectPredictorState(differentPredictorObject, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the first predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", predictorWatcher)
+				// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, predictorWatcher)
 				By("Waiting for the second predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", differentPredictorWatcher)
+				// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, differentPredictorWatcher)
 
 				By("Listing the predictors")
 				predictorObject = ListPredictorsByNameExpectOne(predictorName)
 				ExpectPredictorState(predictorObject, true, "Loaded", "", "UpToDate")
 				differentPredictorObject = ListPredictorsByNameExpectOne(differentPredictorName)
-				ExpectPredictorState(differentPredictorObject, true, "Loaded", "", "UpToDate") 
+				ExpectPredictorState(differentPredictorObject, true, "Loaded", "", "UpToDate")
 			})
 
 			It("should successfully load two models of the same type", func() {
@@ -231,9 +236,11 @@ var _ = Describe("Predictor", func() {
 				ExpectPredictorState(obj2, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the first predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", watcher1)
+				// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher1)
 				By("Waiting for the second predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", watcher2)
+				// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher2)
 
 				By("Listing the predictors")
 				obj1 = ListPredictorsByNameExpectOne(name1)
@@ -269,7 +276,8 @@ var _ = Describe("Predictor", func() {
 				createdPredictor := fvtClient.CreatePredictorExpectSuccess(predictorObject)
 				startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 				By("Waiting for the predictor to be 'Loaded'")
-				obj := WaitForStableActiveModelState("Loaded", watcher)
+				// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+				obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 				resourceVersion := GetString(obj, "metadata", "resourceVersion")
 				SetString(predictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -283,7 +291,7 @@ var _ = Describe("Predictor", func() {
 				fvtClient.DeleteAllPredictors()
 			})
 
-			/*It("should successfully update and reload the model", func() {
+			It("should successfully update and reload the model", func() {
 				// verify starting model path
 				obj := ListAllPredictorsExpectOne()
 				Expect(GetString(obj, "spec", "path")).To(Equal(predictor.currentModelPath))
@@ -296,15 +304,15 @@ var _ = Describe("Predictor", func() {
 				defer watcher.Stop()
 				fvtClient.UpdatePredictorExpectSuccess(predictorObject)
 
-				// watch for the 'Loading' state followed by the 'Loaded' state
-				By("Waiting for the predictor to be 'Loading'")
-				loadingObj := WaitForModelStatus("targetModelState", "Loading", watcher, time.Duration(0))
+				By("Waiting for the Predictor's target model state to move from Loaded (empty) to Loading")
+				loadingObj := WaitForLastStateInExpectedList("targetModelState", []string{"", "Loading"}, watcher)
 				Expect(loadingObj.GetName()).To(Equal(predictorName))
 				Expect(GetString(loadingObj, "spec", "path")).To(Equal(predictor.updatedModelPath))
 				ExpectPredictorState(loadingObj, true, "Loaded", "Loading", "InProgress")
 
 				By("Waiting for the predictor to be 'Loaded'")
-				WaitForStableActiveModelState("Loaded", watcher)
+				loadedObj := WaitForLastStateInExpectedList("targetModelState", []string{"Loading", "Loaded", ""}, watcher)
+				ExpectPredictorState(loadedObj, true, "Loaded", "", "UpToDate")
 				watcher.Stop()
 
 				// get the object with List and verify it one more time
@@ -313,7 +321,7 @@ var _ = Describe("Predictor", func() {
 				Expect(obj.GetName()).To(Equal(predictorName))
 				Expect(GetString(obj, "spec", "path")).To(Equal(predictor.updatedModelPath))
 				ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
-			})*/
+			})
 
 			It("should fail to load the target model with invalid path", func() {
 				// verify starting model path
@@ -330,7 +338,7 @@ var _ = Describe("Predictor", func() {
 
 				// watch for the 'Failed' targetModelState
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				failedObj := WaitForModelStatus("targetModelState", "FailedToLoad", watcher, timeForStatusToStabilize)
+				failedObj := WaitForLastStateInExpectedList("targetModelState", []string{"", "Loading", "FailedToLoad"}, watcher)
 				watcher.Stop()
 
 				Expect(failedObj.GetName()).To(Equal(predictorName))
@@ -374,7 +382,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(predictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(predictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -394,7 +403,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference, update the model and run an inference again on the updated model", func() {
 			// verify starting model path
 			obj := ListAllPredictorsExpectOne()
-			Expect(GetString(obj, "spec", "path")).To(Equal("tensorflow/mnist.savedmodel"))
+			Expect(GetString(obj, "spec", "path")).To(Equal("fvt/tensorflow/mnist.savedmodel"))
 
 			// Prepare for tf inference
 			// load the first image of the mnist test set
@@ -420,7 +429,7 @@ var _ = Describe("Predictor", func() {
 			Expect(inferResponse.RawOutputContents[0][0]).To(BeEquivalentTo(7)) // this model predicts 7 for the first image
 
 			// Modify & set the predictor object with xgboost model and model type
-			SetString(predictorObject, "xgboost", "spec", "path")
+			SetString(predictorObject, "fvt/xgboost/mushroom", "spec", "path")
 			SetString(predictorObject, "xgboost", "spec", "modelType", "name")
 
 			// SECOND - update the predictor with the xgboost predictor object we prepared in the previous lines
@@ -430,15 +439,16 @@ var _ = Describe("Predictor", func() {
 			fvtClient.UpdatePredictorExpectSuccess(predictorObject)
 
 			// watch for the 'Loading' state followed by the 'Loaded' state
-			By("Waiting for the predictor to be 'Loading'")
-			loadingObj := WaitForModelStatus("targetModelState", "Loading", watcher, time.Duration(0))
+			By("Waiting for the Predictor's target model state to move from Loaded (empty) to Loading")
+			loadingObj := WaitForLastStateInExpectedList("targetModelState", []string{"", "Loading"}, watcher)
 			Expect(loadingObj.GetName()).To(Equal(predictorName))
-			Expect(GetString(loadingObj, "spec", "path")).To(Equal("xgboost"))
+			Expect(GetString(loadingObj, "spec", "path")).To(Equal("fvt/xgboost/mushroom"))
 			Expect(GetString(loadingObj, "spec", "modelType", "name")).To(Equal("xgboost"))
 			ExpectPredictorState(loadingObj, true, "Loaded", "Loading", "InProgress")
 
 			By("Waiting for the predictor to be 'Loaded'")
-			WaitForStableActiveModelState("Loaded", watcher)
+			loadedObj := WaitForLastStateInExpectedList("targetModelState", []string{"Loading", "Loaded", ""}, watcher)
+			ExpectPredictorState(loadedObj, true, "Loaded", "", "UpToDate")
 			watcher.Stop()
 			// xgboost predictor should be loaded by now
 
@@ -446,7 +456,7 @@ var _ = Describe("Predictor", func() {
 			By("Listing the predictors")
 			obj = ListAllPredictorsExpectOne()
 			Expect(obj.GetName()).To(Equal(predictorName))
-			Expect(GetString(obj, "spec", "path")).To(Equal("xgboost"))
+			Expect(GetString(obj, "spec", "path")).To(Equal("fvt/xgboost/mushroom"))
 			Expect(GetString(obj, "spec", "modelType", "name")).To(Equal("xgboost"))
 			ExpectPredictorState(obj, true, "Loaded", "", "UpToDate")
 
@@ -491,7 +501,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(tfPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(tfPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -536,7 +547,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference on an updated model", func() {
 
 			By("Updating the predictor with new model path")
-			SetString(tfPredictorObject, "tensorflow/mnist-dup.savedmodel", "spec", "path")
+			SetString(tfPredictorObject, "fvt/tensorflow/mnist-dup.savedmodel", "spec", "path")
 			fvtClient.UpdatePredictorExpectSuccess(tfPredictorObject)
 
 			By("Waiting for the model transition to complete")
@@ -544,9 +555,9 @@ var _ = Describe("Predictor", func() {
 			defer watcher.Stop()
 			// watch for the 'Loading' state followed by the 'Loaded' state
 			By("Waiting for the predictor to be 'Loading'")
-			WaitForModelStatus("targetModelState", "Loading", watcher, time.Duration(0))
+			WaitForLastStateInExpectedList("targetModelState", []string{"", "Loading"}, watcher)
 			By("Waiting for the predictor to be 'Loaded'")
-			WaitForStableActiveModelState("Loaded", watcher)
+			WaitForLastStateInExpectedList("targetModelState", []string{"Loading", "Loaded", ""}, watcher)
 			watcher.Stop()
 
 			// load the first image of the mnist test set
@@ -597,7 +608,7 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
-	/* var _ = Describe("ONNX inference", func() {
+	var _ = Describe("ONNX inference", func() {
 		var onnxPredictorObject *unstructured.Unstructured
 		var onnxPredictorName string
 		var startTime string
@@ -617,7 +628,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(onnxPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(onnxPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -676,7 +688,7 @@ var _ = Describe("Predictor", func() {
 			Expect(inferResponse).To(BeNil())
 			Expect(err.Error()).To(ContainSubstring("INVALID_ARGUMENT: unexpected shape for input"))
 		})
-	})*/
+	})
 
 	var _ = Describe("MLServer inference", func() {
 
@@ -699,7 +711,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(mlsPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(mlsPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -792,7 +805,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(xgboostPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(xgboostPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -871,7 +885,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(ptPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(ptPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -888,7 +903,7 @@ var _ = Describe("Predictor", func() {
 			fvtClient.DeleteAllPredictors()
 		})
 
-		/*It("should successfully run inference", func() {
+		It("should successfully run inference", func() {
 			image := LoadCifarImage(1)
 
 			inferInput := &inference.ModelInferRequest_InferInputTensor{
@@ -910,8 +925,8 @@ var _ = Describe("Predictor", func() {
 			// convert raw_output_contents in bytes to array of 10 float32s
 			output, err := convertRawOutputContentsTo10Floats(inferResponse.GetRawOutputContents()[0])
 			Expect(err).ToNot(HaveOccurred())
-			Expect(output[8]).To(BeEquivalentTo(7.343688488006592)) // the 9th class gets the highest activation for this net/image
-		})*/
+			Expect(output[8]).To(BeEquivalentTo(7.343689441680908)) // the 9th class gets the highest activation for this net/image
+		})
 
 		It("should fail with an invalid input", func() {
 			image := LoadCifarImage(1)
@@ -936,6 +951,95 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
+	// This an inference testcase for pytorch that mandates schema in config.pbtxt
+	// However config.pbtxt (in COS) by default does not include schema section, instead
+	// schema passed in Predictor CR is updated (in config.pbtxt) after model downloaded.
+	var _ = Describe("Pytorch inference with schema", func() {
+
+		var ptPredictorObject *unstructured.Unstructured
+		var ptPredictorName string
+		var startTime string
+
+		BeforeEach(func() {
+			// verify clean state (no predictors)
+			list := fvtClient.ListPredictors(metav1.ListOptions{})
+			Expect(list.Items).To(BeEmpty())
+
+			// load the test predictor object
+			ptPredictorObject = DecodeResourceFromFile(samplesPath + "pytorch-predictor-withschema.yaml")
+			ptPredictorName = GetString(ptPredictorObject, "metadata", "name")
+
+			// create the predictor
+			watcher := fvtClient.StartWatchingPredictors(metav1.ListOptions{}, defaultTimeout)
+			defer watcher.Stop()
+			createdPredictor := fvtClient.CreatePredictorExpectSuccess(ptPredictorObject)
+			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
+			By("Waiting for the predictor to be 'Loaded'")
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
+			resourceVersion := GetString(obj, "metadata", "resourceVersion")
+			SetString(ptPredictorObject, resourceVersion, "metadata", "resourceVersion")
+
+			err := fvtClient.ConnectToModelMesh(Insecure)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			fvtClient.DisconnectFromModelMesh()
+			if CurrentGinkgoTestDescription().Failed {
+				fvtClient.PrintPredictors()
+				fvtClient.TailPodLogs(startTime)
+			}
+			fvtClient.DeleteAllPredictors()
+		})
+
+		It("should successfully run inference", func() {
+			image := LoadCifarImage(1)
+
+			inferInput := &inference.ModelInferRequest_InferInputTensor{
+				Name:     "INPUT__0",
+				Shape:    []int64{1, 3, 32, 32},
+				Datatype: "FP32",
+				Contents: &inference.InferTensorContents{Fp32Contents: image},
+			}
+			inferRequest := &inference.ModelInferRequest{
+				ModelName: ptPredictorName,
+				Inputs:    []*inference.ModelInferRequest_InferInputTensor{inferInput},
+			}
+
+			// run the inference
+			inferResponse, err := fvtClient.RunKfsInference(inferRequest)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(inferResponse).ToNot(BeNil())
+			Expect(inferResponse.ModelName).To(HavePrefix(ptPredictorName))
+			// convert raw_output_contents in bytes to array of 10 float32s
+			output, err := convertRawOutputContentsTo10Floats(inferResponse.GetRawOutputContents()[0])
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output[8]).To(BeEquivalentTo(7.343689441680908)) // the 9th class gets the highest activation for this net/image
+		})
+
+		It("should fail with an invalid input", func() {
+			image := LoadCifarImage(1)
+
+			inferInput := &inference.ModelInferRequest_InferInputTensor{
+				Name:     "INPUT__0",
+				Shape:    []int64{1, 3, 16, 64}, // wrong shape
+				Datatype: "FP32",
+				Contents: &inference.InferTensorContents{Fp32Contents: image},
+			}
+			inferRequest := &inference.ModelInferRequest{
+				ModelName: ptPredictorName,
+				Inputs:    []*inference.ModelInferRequest_InferInputTensor{inferInput},
+			}
+
+			// run the inference
+			inferResponse, err := fvtClient.RunKfsInference(inferRequest)
+			Expect(err).To(HaveOccurred())
+			log.Info(err.Error())
+			Expect(err.Error()).To(ContainSubstring("INVALID_ARGUMENT: unexpected shape for input"))
+			Expect(inferResponse).To(BeNil())
+		})
+	})
 
 	var _ = Describe("LightGBM inference", func() {
 		var lightGBMPredictorObject *unstructured.Unstructured
@@ -958,7 +1062,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(lightGBMPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(lightGBMPredictorObject, resourceVersion, "metadata", "resourceVersion")
 
@@ -1016,7 +1121,7 @@ var _ = Describe("Predictor", func() {
 		})
 	})
 
-	/*var _ = Describe("TLS XGBoost inference", func() {
+	var _ = Describe("TLS XGBoost inference", func() {
 		var xgboostPredictorObject *unstructured.Unstructured
 		var xgboostPredictorName string
 		var startTime string
@@ -1036,7 +1141,8 @@ var _ = Describe("Predictor", func() {
 			createdPredictor := fvtClient.CreatePredictorExpectSuccess(xgboostPredictorObject)
 			startTime = GetString(createdPredictor, "metadata", "creationTimestamp")
 			By("Waiting for the predictor to be 'Loaded'")
-			obj := WaitForStableActiveModelState("Loaded", watcher)
+			// "Standby" (or) "FailedToLoad" states are currently encountered after the "Loading" state but they shouldn't be
+			obj := WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "FailedToLoad", "Loading", "Loaded"}, watcher)
 			resourceVersion := GetString(obj, "metadata", "resourceVersion")
 			SetString(xgboostPredictorObject, resourceVersion, "metadata", "resourceVersion")
 		})
@@ -1055,7 +1161,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference with basic TLS", func() {
 			fvtClient.UpdateConfigMapTLS("san-tls-secret", "optional")
 
-			watcher := fvtClient.StartWatchingDeploys()
+			watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 			defer watcher.Stop()
 			By("Waiting for the deployments replicas to be ready")
 			WaitForStableActiveDeployState(watcher)
@@ -1101,7 +1207,7 @@ var _ = Describe("Predictor", func() {
 		It("should successfully run an inference with mutual TLS", func() {
 			fvtClient.UpdateConfigMapTLS("san-tls-secret-client-auth", "require")
 
-			watcher := fvtClient.StartWatchingDeploys()
+			watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 			defer watcher.Stop()
 			By("Waiting for the deployments replicas to be ready")
 			WaitForStableActiveDeployState(watcher)
@@ -1146,7 +1252,7 @@ var _ = Describe("Predictor", func() {
 		It("should fail to run inference when the server has mutual TLS but the client does not present a certificate", func() {
 			fvtClient.UpdateConfigMapTLS("san-tls-secret-client-auth", "require")
 
-			watcher := fvtClient.StartWatchingDeploys()
+			watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 			defer watcher.Stop()
 			By("Waiting for the deployments replicas to be ready")
 			WaitForStableActiveDeployState(watcher)
@@ -1156,7 +1262,7 @@ var _ = Describe("Predictor", func() {
 			mmeshErr := fvtClient.ConnectToModelMesh(TLS)
 			Expect(mmeshErr).To(HaveOccurred())
 		})
-	})*/
+	})
 	// The TLS tests `Describe` block should be the last one in the list to
 	// improve efficiency of the tests. Any test after the TLS tests would need
 	// to wait for the configuration changes to roll out to all Deployments.
@@ -1191,7 +1297,7 @@ var _ = Describe("Invalid Predictors", func() {
 		fvtClient.ApplyUserConfigMap(config)
 
 		// ensure a stable deploy state
-		watcher := fvtClient.StartWatchingDeploys()
+		watcher := fvtClient.StartWatchingDeploys(servingRuntimeDeploymentsListOptions)
 		defer watcher.Stop()
 		WaitForStableActiveDeployState(watcher)
 	})
@@ -1219,7 +1325,8 @@ var _ = Describe("Invalid Predictors", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+				// "Standby" state is encountered after the "Loading" state but it shouldn't be
+				obj = WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "Loading", "FailedToLoad"}, watcher)
 
 				By("Asserting on the predictor state")
 				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
@@ -1239,7 +1346,8 @@ var _ = Describe("Invalid Predictors", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+				// "Standby" state is encountered after the "Loading" state but it shouldn't be
+				obj = WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "Loading", "FailedToLoad"}, watcher)
 
 				By("Asserting on the predictor state")
 				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
@@ -1260,7 +1368,8 @@ var _ = Describe("Invalid Predictors", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				obj = WaitForStableActiveModelState("FailedToLoad", watcher)
+				// "Standby" state is encountered after the "Loading" state but it shouldn't be
+				obj = WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "Loading", "FailedToLoad"}, watcher)
 
 				By("Asserting on the predictor state")
 				ExpectPredictorState(obj, false, "FailedToLoad", "", "UpToDate")
@@ -1281,7 +1390,8 @@ var _ = Describe("Invalid Predictors", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				WaitForStableActiveModelState("FailedToLoad", watcher)
+				// "Standby" state is encountered after the "Loading" state but it shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "Loading", "FailedToLoad"}, watcher)
 
 				By("Listing the predictor")
 				obj = ListAllPredictorsExpectOne()
@@ -1303,7 +1413,8 @@ var _ = Describe("Invalid Predictors", func() {
 				ExpectPredictorState(obj, false, "Pending", "", "UpToDate")
 
 				By("Waiting for the predictor to be 'FailedToLoad'")
-				WaitForStableActiveModelState("FailedToLoad", watcher)
+				// "Standby" state is encountered after the "Loading" state but it shouldn't be
+				WaitForLastStateInExpectedList("activeModelState", []string{"Pending", "Loading", "Standby", "Loading", "FailedToLoad"}, watcher)
 
 				By("Listing the predictor")
 				obj = ListAllPredictorsExpectOne()
@@ -1364,16 +1475,73 @@ func ExpectPredictorFailureInfo(obj *unstructured.Unstructured, reason string, h
 	}
 }
 
-func WaitForModelStatus(statusAttribute, targetState string, watcher watch.Interface, timeToStabilize time.Duration) *unstructured.Unstructured {
+// func WaitForModelStatus(statusAttribute, targetState string, watcher watch.Interface, timeToStabilize time.Duration) *unstructured.Unstructured {
+// 	ch := watcher.ResultChan()
+// 	targetStateReached := false
+// 	var obj *unstructured.Unstructured
+// 	var lastState string
+// 	var predictorName string
+
+// 	done := false
+// 	for !done {
+// 		select {
+// 		case event, ok := <-ch:
+// 			if !ok {
+// 				// the channel was closed (watcher timeout reached)
+// 				done = true
+// 				break
+// 			}
+// 			obj, ok = event.Object.(*unstructured.Unstructured)
+// 			Expect(ok).To(BeTrue())
+// 			log.Info("Watcher got event with object", logPredictorStatus(obj)...)
+
+// 			lastState = GetString(obj, "status", statusAttribute)
+// 			predictorName = GetString(obj, "metadata", "name")
+// 			if lastState == targetState {
+// 				// targetStateReached and stable
+// 				targetStateReached = true
+// 				done = true
+// 			}
+
+// 		// this case executes if no events are received during the timeToStabilize duration
+// 		case <-time.After(timeToStabilize):
+// 			if lastState == targetState {
+// 				// targetStateReached and stable
+// 				targetStateReached = true
+// 				done = true
+// 			}
+// 		}
+// 	}
+// 	Expect(targetStateReached).To(BeTrue(), "Timeout before predictor '%s' became '%s' (last state was '%s')",
+// 		predictorName, targetState, lastState)
+// 	return obj
+// }
+
+// Waiting for predictor state to reach the last one in the expected list
+// Predictor state is allowed to directly reach the last state in the expected list i.e; Loaded. Also, Predictor state can be
+// one of the earlier states (i.e; Pending or Loading), but state change should happen in the following order:
+// [Pending => Loaded]  (or) [Pending => Loading => Loaded]  (or) [Loading => Loaded] (or) [Pending => Loading => FailedToLoad]
+func WaitForLastStateInExpectedList(statusAttribute string, expectedStates []string, watcher watch.Interface) *unstructured.Unstructured {
 	ch := watcher.ResultChan()
 	targetStateReached := false
 	var obj *unstructured.Unstructured
+	var targetState string = expectedStates[len(expectedStates)-1]
 	var lastState string
 	var predictorName string
 
+	timeout := time.After(predictorTimeout)
+	lastStateIndex := 0
 	done := false
 	for !done {
 		select {
+		// Exit the loop if the final state in the list is not reached within given timeout
+		case <-timeout:
+			if lastState == targetState {
+				// targetStateReached and stable
+				targetStateReached = true
+			}
+			done = true
+
 		case event, ok := <-ch:
 			if !ok {
 				// the channel was closed (watcher timeout reached)
@@ -1390,14 +1558,17 @@ func WaitForModelStatus(statusAttribute, targetState string, watcher watch.Inter
 				// targetStateReached and stable
 				targetStateReached = true
 				done = true
-			}
-
-		// this case executes if no events are received during the timeToStabilize duration
-		case <-time.After(timeToStabilize):
-			if lastState == targetState {
-				// targetStateReached and stable
-				targetStateReached = true
-				done = true
+			} else {
+				// Verify the order of predictor state change
+				validStateChange := false
+				for i, state := range expectedStates[lastStateIndex:] {
+					if state == lastState {
+						lastStateIndex += i
+						validStateChange = true
+						break
+					}
+				}
+				Expect(validStateChange).To(BeTrue(), "Predictor %s state should not be changed from '%s' to '%s'", predictorName, expectedStates[lastStateIndex], lastState)
 			}
 		}
 	}
@@ -1406,50 +1577,50 @@ func WaitForModelStatus(statusAttribute, targetState string, watcher watch.Inter
 	return obj
 }
 
-func GetModelNextState(statusAttribute, lastState string, watcher watch.Interface, timeToStabilize time.Duration) *unstructured.Unstructured {
-	ch := watcher.ResultChan()
-	var obj *unstructured.Unstructured
-	var stateChanged bool = false
-	var currentState string
-	var predictorName string
-
-	done := false
-	for !done {
-		select {
-		case event, ok := <-ch:
-			if !ok {
-				// the channel was closed (watcher timeout reached)
-				break
-			}
-			obj, ok = event.Object.(*unstructured.Unstructured)
-			Expect(ok).To(BeTrue())
-			log.Info("Watcher got event with object", logPredictorStatus(obj)...)
-
-			currentState = GetString(obj, "status", statusAttribute)
-			predictorName = GetString(obj, "metadata", "name")
-			if lastState != currentState {
-				// state changed
-				stateChanged = true
-				done = true
-			}
-
-		// this case executes if no events are received during the timeToStabilize duration
-		case <-time.After(timeToStabilize):
-			if lastState != currentState {
-				// state changed
-				stateChanged = true
-			}
-			done = true
-		}
-	}
-	Expect(stateChanged).To(BeTrue(), "Timeout before predictor '%s' state is changed (last state was '%s')",
-		predictorName, lastState)
-	return obj
-}
-
-func WaitForStableActiveModelState(targetState string, watcher watch.Interface) *unstructured.Unstructured {
-	return WaitForModelStatus("activeModelState", targetState, watcher, timeForStatusToStabilize)
-}
+// func GetModelNextState(statusAttribute, lastState string, watcher watch.Interface, timeToStabilize time.Duration) *unstructured.Unstructured {
+// 	ch := watcher.ResultChan()
+// 	var obj *unstructured.Unstructured
+// 	var stateChanged bool = false
+// 	var currentState string
+// 	var predictorName string
+//
+// 	done := false
+// 	for !done {
+// 		select {
+// 		case event, ok := <-ch:
+// 			if !ok {
+// 				// the channel was closed (watcher timeout reached)
+// 				break
+// 			}
+// 			obj, ok = event.Object.(*unstructured.Unstructured)
+// 			Expect(ok).To(BeTrue())
+// 			log.Info("Watcher got event with object", logPredictorStatus(obj)...)
+//
+// 			currentState = GetString(obj, "status", statusAttribute)
+// 			predictorName = GetString(obj, "metadata", "name")
+// 			if lastState != currentState {
+// 				// state changed
+// 				stateChanged = true
+// 				done = true
+// 			}
+//
+// 		// this case executes if no events are received during the timeToStabilize duration
+// 		case <-time.After(timeToStabilize):
+// 			if lastState != currentState {
+// 				// state changed
+// 				stateChanged = true
+// 			}
+// 			done = true
+// 		}
+// 	}
+// 	Expect(stateChanged).To(BeTrue(), "Timeout before predictor '%s' state is changed (last state was '%s')",
+// 		predictorName, lastState)
+// 	return obj
+// }
+//
+// func WaitForStableActiveModelState(targetState string, watcher watch.Interface) *unstructured.Unstructured {
+// 	return WaitForModelStatus("activeModelState", targetState, watcher, timeForStatusToStabilize)
+// }
 
 func WaitForDeployStatus(watcher watch.Interface, timeToStabilize time.Duration) {
 	ch := watcher.ResultChan()

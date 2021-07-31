@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
@@ -38,7 +38,7 @@ func Test_GetEtcdClientConfig_ErrFileDoesNotExist(t *testing.T) {
 	etcdConfig := EtcdConfig{
 		Endpoints:       etcdEndpoint,
 		CertificateFile: "path/to/certificate"}
-	expectedError := "Referenced TLS certificate secret key not found: path/to/certificate"
+	expectedError := "referenced TLS certificate secret key not found: path/to/certificate"
 
 	etcdClientConfig, err := getEtcdClientConfig(etcdConfig, map[string][]byte{}, logger)
 	assert.Empty(t, etcdClientConfig)
@@ -49,7 +49,7 @@ func Test_GetEtcdClientConfig_ErrOnlyKeyProvided(t *testing.T) {
 	etcdConfig := EtcdConfig{
 		Endpoints: etcdEndpoint,
 		ClientKey: "myClientKey"}
-	expectedError := fmt.Errorf("Need to set both client_key/client_key_file and client_certificate/client_certificate_file")
+	expectedError := fmt.Errorf("need to set both client_key/client_key_file and client_certificate/client_certificate_file")
 
 	etcdClientConfig, err := getEtcdClientConfig(etcdConfig, map[string][]byte{}, logger)
 
@@ -62,7 +62,7 @@ func Test_GetEtcdClientConfig_ErrKeyAndCert(t *testing.T) {
 		Endpoints:         etcdEndpoint,
 		ClientKey:         "myClientKey",
 		ClientCertificate: "myClientCertificate"}
-	expectedError := fmt.Errorf("Could not load client key pair: %w",
+	expectedError := fmt.Errorf("could not load client key pair: %w",
 		fmt.Errorf("tls: failed to find any PEM data in certificate input"))
 
 	etcdClientConfig, err := getEtcdClientConfig(etcdConfig, map[string][]byte{}, logger)
@@ -175,8 +175,8 @@ func Test_CreateEtcdClient_Fail(t *testing.T) {
 		Endpoints:         etcdEndpoint,
 		ClientKey:         "myClientKey",
 		ClientCertificate: "myClientCertificate"}
-	expectedError := "Failed to create etcd client config: " +
-		"Could not load client key pair: tls: failed to find any PEM data in certificate input"
+	expectedError := "failed to create etcd client config: " +
+		"could not load client key pair: tls: failed to find any PEM data in certificate input"
 
 	etcdClient, err := CreateEtcdClient(etcdConfig, map[string][]byte{}, logger)
 	assert.Equal(t, expectedError, err.Error())

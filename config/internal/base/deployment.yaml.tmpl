@@ -31,7 +31,7 @@ spec:
       name: {{.ServiceName}}-{{.Name}}
   template:
     metadata:
-      # annotations required for prometheus, see https://github.ibm.com/ai-foundation/model-mesh/blob/develop/config/base/patches/prometheus_metrics.yaml
+      # annotations required for prometheus, see https://github.com/kserve/modelmesh/blob/main/config/base/patches/prometheus_metrics.yaml
       {{if .Metrics}}
       annotations:
         prometheus.io/path: /metrics
@@ -119,7 +119,7 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: [/opt/watson/mmesh/stop.sh, wait]
+                command: [/opt/kserve/mmesh/stop.sh, wait]
 
           securityContext:
             capabilities:

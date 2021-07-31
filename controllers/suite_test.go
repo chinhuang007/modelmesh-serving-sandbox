@@ -43,6 +43,8 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/kserve/modelmesh-serving/controllers/config"
+	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 	mfc "github.com/manifestival/controller-runtime-client"
 	mf "github.com/manifestival/manifestival"
 	. "github.com/onsi/ginkgo"
@@ -59,11 +61,9 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/yaml"
-	"wmlserving.ai.ibm.com/controller/controllers/config"
-	"wmlserving.ai.ibm.com/controller/controllers/modelmesh"
 
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -168,18 +168,20 @@ var _ = BeforeSuite(func(done Done) {
 
 	// create the reconciler and add it to the manager
 	err = (&ServingRuntimeReconciler{
-		Client:              k8sManager.GetClient(),
-		Scheme:              k8sManager.GetScheme(),
-		Log:                 ctrl.Log.WithName("controllers").WithName("ServingRuntime"),
-		ConfigProvider:      configProvider,
-		DeploymentName:      "modelmesh-controller",
-		DeploymentNamespace: namespace,
+		Client:                  k8sManager.GetClient(),
+		Scheme:                  k8sManager.GetScheme(),
+		Log:                     ctrl.Log.WithName("controllers").WithName("ServingRuntime"),
+		ConfigProvider:          configProvider,
+		DeploymentName:          "modelmesh-controller",
+		DeploymentNamespace:     namespace,
+		EnableTrainedModelWatch: false,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	// TODO: create PredictorReconciler when Predictor tests are added
 
 	go func() {
+		defer GinkgoRecover()
 		err = k8sManager.Start(ctrl.SetupSignalHandler())
 		Expect(err).ToNot(HaveOccurred())
 	}()

@@ -18,7 +18,7 @@ metadata:
   name: servingruntime-viewer-role
 rules:
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - servingruntimes
     verbs:
@@ -26,7 +26,7 @@ rules:
       - list
       - watch
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - servingruntimes/status
     verbs:

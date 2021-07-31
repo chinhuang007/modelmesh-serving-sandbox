@@ -21,7 +21,7 @@ import (
 const (
 	EtcdSecretKey = "etcd_connection" //TODO probably move this const
 	etcdVolume    = "etcd-config"
-	etcdMountPath = "/opt/watson/mmesh/etcd"
+	etcdMountPath = "/opt/kserve/mmesh/etcd"
 	kvStoreEnvVar = "KV_STORE"
 )
 

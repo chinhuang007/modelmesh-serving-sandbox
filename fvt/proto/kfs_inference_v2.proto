@@ -1,11 +1,11 @@
 syntax = "proto3";
 package inference;
-option go_package = "wmlserving.ai.ibm.com/controller/fvt/generated;inference";
+option go_package = "github.com/kserve/modelmesh-serving/fvt/generated;inference";
 
 // Inference Server GRPC endpoints.
 service GRPCInferenceService
 {
-  // The ServerLive API indicates if the inference server is able to receive 
+  // The ServerLive API indicates if the inference server is able to receive
   // and respond to metadata and inference requests.
   rpc ServerLive(ServerLiveRequest) returns (ServerLiveResponse) {}
 
@@ -15,18 +15,18 @@ service GRPCInferenceService
   // The ModelReady API indicates if a specific model is ready for inferencing.
   rpc ModelReady(ModelReadyRequest) returns (ModelReadyResponse) {}
 
-  // The ServerMetadata API provides information about the server. Errors are 
-  // indicated by the google.rpc.Status returned for the request. The OK code 
+  // The ServerMetadata API provides information about the server. Errors are
+  // indicated by the google.rpc.Status returned for the request. The OK code
   // indicates success and other codes indicate failure.
   rpc ServerMetadata(ServerMetadataRequest) returns (ServerMetadataResponse) {}
 
-  // The per-model metadata API provides information about a model. Errors are 
-  // indicated by the google.rpc.Status returned for the request. The OK code 
+  // The per-model metadata API provides information about a model. Errors are
+  // indicated by the google.rpc.Status returned for the request. The OK code
   // indicates success and other codes indicate failure.
   rpc ModelMetadata(ModelMetadataRequest) returns (ModelMetadataResponse) {}
 
   // The ModelInfer API performs inference using the specified model. Errors are
-  // indicated by the google.rpc.Status returned for the request. The OK code 
+  // indicated by the google.rpc.Status returned for the request. The OK code
   // indicates success and other codes indicate failure.
   rpc ModelInfer(ModelInferRequest) returns (ModelInferResponse) {}
 }
@@ -245,9 +245,9 @@ message ModelInferResponse
   repeated bytes raw_output_contents = 6;
 }
 
-// An inference parameter value. The Parameters message describes a 
+// An inference parameter value. The Parameters message describes a
 // “name”/”value” pair, where the “name” is the name of the parameter
-// and the “value” is a boolean, integer, or string corresponding to 
+// and the “value” is a boolean, integer, or string corresponding to
 // the parameter.
 message InferParameter
 {

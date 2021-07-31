@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-logr/logr"
 
@@ -151,6 +152,8 @@ func (kr *KubeResolver) reconcile(ctx context.Context, req ctrl.Request,
 			log.Info("Endpoints not found", "endpoints", req.Name)
 		}
 	}
+	result := ctrl.Result{}
+	var updateError error
 	for _, r := range list {
 		if errors.IsNotFound(err) {
 			r.cc.ReportError(fmt.Errorf("kube Service %s not found", req.Name))
@@ -164,10 +167,19 @@ func (kr *KubeResolver) reconcile(ctx context.Context, req ctrl.Request,
 				}
 			}
 		}
-		r.cc.UpdateState(resolver.State{Addresses: addrs})
-		log.Info("Updated resolver state with new endpoints", "endpoints", req.Name, "count", len(addrs))
+		if err := r.cc.UpdateState(resolver.State{Addresses: addrs}); err != nil {
+			if err.Error() == "bad resolver state" {
+				// This is possible/expected when we are reconfiguring the client
+				log.Info("Failed to update resolver due to bad state, requeuing endpoint reconciliation")
+				result = ctrl.Result{RequeueAfter: 1 * time.Second}
+			} else {
+				updateError = fmt.Errorf("error updating state of ClientConn with new addresses: %w", err)
+			}
+		} else {
+			log.Info("Updated resolver state with new endpoints", "endpoints", req.Name, "count", len(addrs))
+		}
 	}
-	return ctrl.Result{}, nil
+	return result, updateError
 }
 
 // returns int32 port number if port string matches name or number of port in EndpointSubset

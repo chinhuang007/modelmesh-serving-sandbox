@@ -19,13 +19,13 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	mmeshapi "github.com/kserve/modelmesh-serving/generated/mmesh"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	ctrl "sigs.k8s.io/controller-runtime"
-	mmeshapi "wmlserving.ai.ibm.com/controller/generated/mmesh"
 )
 
-// Encapsulates Model-Mesh gRPC service
+// Encapsulates ModelMesh gRPC service
 type MMService struct {
 	Log logr.Logger
 

@@ -1,7 +1,0 @@
-metadata:
-  title: "Model-Mesh Serving"
-  description: "Model-Mesh Serving documentation site"
-  keywords: "model-serving,model serving,serving,wml-serving,model-mesh"
-pathPrefix: /ai-foundation/wml-serving
-repository:
-  baseUrl: https://github.ibm.com/ai-foundation/wml-serving

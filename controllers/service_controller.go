@@ -34,16 +34,18 @@ import (
 	"errors"
 	"fmt"
 
-	"wmlserving.ai.ibm.com/controller/controllers/modelmesh"
+	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"wmlserving.ai.ibm.com/controller/pkg/mmesh"
+	"github.com/kserve/modelmesh-serving/pkg/mmesh"
 
 	"github.com/go-logr/logr"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8serr "k8s.io/apimachinery/pkg/api/errors"
@@ -57,6 +59,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
+const (
+	commonLabelValue   = "modelmesh-controller"
+	serviceMonitorName = "modelmesh-metrics-monitor"
+)
+
 // ServiceReconciler reconciles a ServingRuntime object
 type ServiceReconciler struct {
 	client.Client
@@ -68,14 +75,17 @@ type ServiceReconciler struct {
 
 	ModelMeshService *mmesh.MMService
 	ModelEventStream *mmesh.ModelMeshEventStream
+
+	ServiceMonitorCRDExists bool
 }
+
+// +kubebuilder:rbac:namespace="model-serving",groups="monitoring.coreos.com",resources=servicemonitors,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.Log.V(1).Info("Service reconciler called")
-	var cfg *Config
+	cfg := r.ConfigProvider.GetConfig()
 	var changed bool
 	if req.NamespacedName == r.ConfigMapName || !r.ModelEventStream.IsWatching() {
-		cfg = r.ConfigProvider.GetConfig()
 		tlsConfig, err := r.tlsConfigFromSecret(ctx, cfg.TLS.SecretName)
 		if err != nil {
 			return RequeueResult, err
@@ -89,16 +99,17 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			cfg.ModelMeshEndpoint, cfg.TLS.SecretName, tlsConfig, cfg.HeadlessService, metricsPort)
 	}
 
-	if changed || req.NamespacedName != r.ConfigMapName {
-		d := &appsv1.Deployment{}
-		err := r.Client.Get(ctx, r.ControllerDeployment, d)
-		if err != nil {
-			if k8serr.IsNotFound(err) {
-				// No need to delete because the Deployment is the owner
-				return ctrl.Result{}, nil
-			}
-			return RequeueResult, err
+	d := &appsv1.Deployment{}
+	err := r.Client.Get(ctx, r.ControllerDeployment, d)
+	if err != nil {
+		if k8serr.IsNotFound(err) {
+			// No need to delete because the Deployment is the owner
+			return ctrl.Result{}, nil
 		}
+		return RequeueResult, fmt.Errorf("Could not get the controller deployment: %w", err)
+	}
+
+	if (changed || req.NamespacedName != r.ConfigMapName) && req.Name != serviceMonitorName {
 		err2, requeue := r.applyService(ctx, d)
 		if err2 != nil || requeue {
 			//TODO probably shorter requeue time (immediate?) for service recreate case
@@ -106,9 +117,17 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 	}
 
-	if cfg != nil {
-		err := r.ModelEventStream.UpdateWatchedService(ctx, cfg.GetEtcdSecretName(), r.ModelMeshService.Name)
-		if err != nil {
+	err = r.ModelEventStream.UpdateWatchedService(ctx, cfg.GetEtcdSecretName(), r.ModelMeshService.Name)
+	if err != nil {
+		return RequeueResult, err
+	}
+
+	// Service Monitor reconciliation should be called towards the end of the Service Reconcile method so that
+	// errors returned from here should not impact any other functions.
+	if r.ServiceMonitorCRDExists {
+		// Reconcile Service Monitor if the ServiceMonitor CRD exists
+		err, requeue := r.ReconcileServiceMonitor(ctx, cfg.Metrics, d)
+		if err != nil || requeue {
 			return RequeueResult, err
 		}
 	}
@@ -154,7 +173,7 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 	serviceName := r.ModelMeshService.Name
 	exists := true
 	err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: r.ControllerDeployment.Namespace}, s)
-	if err != nil && k8serr.IsNotFound(err) {
+	if k8serr.IsNotFound(err) {
 		exists = false
 		s.Name = serviceName
 		s.Namespace = r.ControllerDeployment.Namespace
@@ -174,7 +193,6 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 		return nil, true
 	}
 
-	commonLabelValue := "modelmesh-controller"
 	s.Labels = map[string]string{
 		"modelmesh-service":            serviceName,
 		"app.kubernetes.io/instance":   commonLabelValue,
@@ -200,7 +218,7 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 
 	err = controllerutil.SetControllerReference(d, s, r.Scheme)
 	if err != nil {
-		r.Log.Error(err, "Could not set owner reference")
+		return fmt.Errorf("Could not set owner reference: %w", err), false
 	}
 
 	if !exists {
@@ -229,12 +247,78 @@ func (r *ServiceReconciler) applyService(ctx context.Context, d *appsv1.Deployme
 	return err, false
 }
 
+func (r *ServiceReconciler) ReconcileServiceMonitor(ctx context.Context, metrics PrometheusConfig, owner metav1.Object) (error, bool) {
+	r.Log.V(1).Info("Applying Service Monitor")
+
+	sm := &monitoringv1.ServiceMonitor{}
+	serviceName := r.ModelMeshService.Name
+
+	err := r.Client.Get(ctx, client.ObjectKey{Name: serviceMonitorName, Namespace: r.ControllerDeployment.Namespace}, sm)
+	exists := true
+	if k8serr.IsNotFound(err) {
+		// Create the ServiceMonitor if not found
+		exists = false
+		sm.Name = serviceMonitorName
+		sm.Namespace = r.ControllerDeployment.Namespace
+	} else if err != nil {
+		r.Log.Error(err, "Unable to access service monitor", "serviceMonitorName", serviceMonitorName)
+		return nil, false
+	}
+
+	// Check if the prometheus operator support is enabled
+	if metrics.DisablePrometheusOperatorSupport || !metrics.Enabled {
+		r.Log.V(1).Info("Configuration parameter 'DisablePrometheusOperatorSupport' is set to true (or) Metrics is disabled", "DisablePrometheusOperatorSupport", metrics.DisablePrometheusOperatorSupport, "metrics.Enabled", metrics.Enabled)
+		if exists {
+			// Delete ServiceMonitor CR if already exists
+			if err = r.Client.Delete(ctx, sm); err != nil {
+				r.Log.Error(err, "Unable to delete service monitor", "serviceMonitorName", serviceMonitorName)
+			}
+		}
+		return nil, false
+	}
+
+	if err = controllerutil.SetControllerReference(owner, sm, r.Scheme); err != nil {
+		return fmt.Errorf("Could not set owner reference: %w", err), false
+	}
+
+	sm.ObjectMeta.Labels = map[string]string{
+		"modelmesh-service":            serviceName,
+		"app.kubernetes.io/instance":   commonLabelValue,
+		"app.kubernetes.io/managed-by": commonLabelValue,
+		"app.kubernetes.io/name":       commonLabelValue,
+	}
+	sm.Spec.Selector = metav1.LabelSelector{MatchLabels: map[string]string{"modelmesh-service": serviceName}}
+	sm.Spec.Endpoints = []monitoringv1.Endpoint{{
+		Interval: "30s",
+		Port:     "prometheus",
+		Scheme:   metrics.Scheme,
+		TLSConfig: &monitoringv1.TLSConfig{
+			SafeTLSConfig: monitoringv1.SafeTLSConfig{InsecureSkipVerify: true}, //TODO: Update the TLSConfig to use cacert
+		}},
+	}
+
+	if !exists {
+		err = r.Client.Create(ctx, sm)
+	} else {
+		err = r.Client.Update(ctx, sm)
+	}
+	if err != nil {
+		if k8serr.IsConflict(err) {
+			// this can occur during normal operations if the Service Monitor was updated during this reconcile loop
+			r.Log.Info("Could not create (or) update service monitor due to resource conflict")
+			return nil, true
+		}
+		r.Log.Error(err, "Could not create (or) update service monitor", "serviceMonitorName", serviceMonitorName)
+	}
+	return err, false
+}
+
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	filter := func(meta metav1.Object) bool {
 		return meta.GetName() == r.ControllerDeployment.Name &&
 			meta.GetNamespace() == r.ControllerDeployment.Namespace
 	}
-	err := ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		Named("ServiceReconciler").
 		For(&appsv1.Deployment{}, builder.WithPredicates(predicate.Funcs{
 			CreateFunc: func(event event.CreateEvent) bool { return filter(event.Object) },
@@ -245,8 +329,20 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}},
 			ConfigWatchHandler(r.ConfigMapName, func() []reconcile.Request {
 				return []reconcile.Request{{NamespacedName: r.ConfigMapName}}
-			}, r.ConfigProvider, &r.Client)).
-		Complete(r)
+			}, r.ConfigProvider, &r.Client))
 
+	// Enable ServiceMonitor watch if ServiceMonitorCRDExists
+	if r.ServiceMonitorCRDExists {
+		builder.Watches(&source.Kind{Type: &monitoringv1.ServiceMonitor{}},
+			handler.EnqueueRequestsFromMapFunc(func(o client.Object) []reconcile.Request {
+				if o.GetName() == serviceMonitorName && o.GetNamespace() == r.ControllerDeployment.Namespace {
+					return []reconcile.Request{{
+						NamespacedName: types.NamespacedName{Name: serviceMonitorName, Namespace: r.ConfigMapName.Namespace},
+					}}
+				}
+				return []reconcile.Request{}
+			}))
+	}
+	err := builder.Complete(r)
 	return err
 }

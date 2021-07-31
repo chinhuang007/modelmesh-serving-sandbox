@@ -61,7 +61,19 @@ rules:
       - update
       - watch
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - serving.kserve.io
     resources:
       - predictors
     verbs:
@@ -73,7 +85,7 @@ rules:
       - update
       - watch
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - predictors/finalizers
     verbs:
@@ -81,7 +93,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - predictors/status
     verbs:
@@ -89,7 +101,7 @@ rules:
       - patch
       - update
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - servingruntimes
       - servingruntimes/finalizers
@@ -102,9 +114,35 @@ rules:
       - update
       - watch
   - apiGroups:
-      - wmlserving.ai.ibm.com
+      - serving.kserve.io
     resources:
       - servingruntimes/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - serving.kubeflow.org
+    resources:
+      - trainedmodels
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - serving.kubeflow.org
+    resources:
+      - trainedmodels/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - serving.kubeflow.org
+    resources:
+      - trainedmodels/status
     verbs:
       - get
       - patch

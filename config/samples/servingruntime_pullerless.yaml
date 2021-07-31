@@ -1,4 +1,4 @@
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
 metadata:
   name: custom-runtime-pullerless
@@ -12,7 +12,7 @@ spec:
             resourceFieldRef:
               containerName: modelserver
               resource: requests.memory
-      image: wcp-ai-foundation-team-docker-virtual.artifactory.swg-devops.com/msp-ml-server:0.1.0_20210512-2
+      image: seldonio/mlserver:0.3.2
       name: modelserver
       resources:
         requests:

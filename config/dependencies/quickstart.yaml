@@ -91,7 +91,7 @@ spec:
         - name: MINIO_SECRET_KEY
           value: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
       # image: quay.io/cloudservices/minio:latest
-      image: tedhtchang/minio-modelmesh-example-model:latest
+      image: kserve/modelmesh-minio-examples:latest
       name: minio
 ---
 apiVersion: v1

@@ -17,14 +17,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
-	etcd3 "go.etcd.io/etcd/clientv3"
+	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
+	etcd3 "go.etcd.io/etcd/client/v3"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"wmlserving.ai.ibm.com/controller/controllers/modelmesh"
 )
 
 // ModelMeshEventStream generates events for Predictors based on
@@ -128,37 +129,62 @@ func (mes *ModelMeshEventStream) UpdateWatchedService(ctx context.Context, etcdS
 
 	vmodelRegistryPrefix := fmt.Sprintf("%s/%s/", servicePrefix, VModelRegistryPrefix)
 	NewEtcdRangeWatcher(mes.logger, mes.etcdClient, vmodelRegistryPrefix).
-		Start(watchCtx, func(eventType KeyEventType, key string, value *[]byte) {
-			mes.logger.V(1).Info("ModelMesh VModel Event", "vModelId", key, "event", eventType)
-			if eventType == UPDATE || eventType == DELETE {
+		Start(watchCtx, false, func(eventType KeyEventType, key string, value []byte) {
+			if eventType != UPDATE && (eventType != DELETE || value == nil) {
+				mes.logger.V(1).Info("ModelMesh VModel Event", "vModelId", key, "event", eventType)
+				return
+			}
+			if owner, err := ownerIDFromVModelRecord(value); err == nil {
+				namespace := mes.namespace
+				if owner != "" {
+					namespace = fmt.Sprintf("%s_%s", owner, namespace)
+				}
+				mes.logger.V(1).Info("ModelMesh VModel Event", "vModelId", key, "owner", owner, "event", eventType)
 				mes.MMEvents <- event.GenericEvent{Object: &v1.PartialObjectMetadata{
-					ObjectMeta: v1.ObjectMeta{Name: key, Namespace: mes.namespace},
+					ObjectMeta: v1.ObjectMeta{Name: key, Namespace: namespace},
 				}}
+			} else {
+				mes.logger.Error(err, "Error parsing VModel record to determine owner, ignoring event",
+					"vModelId", key, "event", eventType)
 			}
 		})
 
 	modelRegistryPrefix := fmt.Sprintf("%s/%s/", servicePrefix, ModelRegistryPrefix)
 	NewEtcdRangeWatcher(mes.logger, mes.etcdClient, modelRegistryPrefix).
-		Start(watchCtx, func(eventType KeyEventType, key string, value *[]byte) {
+		Start(watchCtx, true, func(eventType KeyEventType, key string, _ []byte) {
 			mes.logger.V(1).Info("ModelMesh Model Event", "modelId", key, "event", eventType)
 			if eventType == UPDATE {
-				nameLen := len(key) - 11 // Remove generated hash suffix ('-' plus 10 chars)
-				if nameLen > 0 && key[nameLen] == '-' {
-					// Infer predictor/vmodel id from concrete model id by removing hash suffix
-					predictorName := key[:nameLen]
-					mes.MMEvents <- event.GenericEvent{Object: &v1.PartialObjectMetadata{
-						ObjectMeta: v1.ObjectMeta{Name: predictorName, Namespace: mes.namespace},
-					}}
-				} else {
-					mes.logger.Info("Ignoring event for unrecognized model-mesh model",
-						"modelId", key, "eventType", eventType)
+				// key is like "vmodelname__owner-0123456789"
+				ownerIdx := strings.LastIndex(key, "__") + 2
+				if ownerIdx > 2 {
+					hashIdx := len(key) - 11 // 11 is ('-' plus 10 hash chars)
+					if hashIdx > ownerIdx && key[hashIdx] == '-' {
+						// Infer predictor/vmodel and source ids from concrete model id by removing hash suffix
+						sourceId, predictorName := key[ownerIdx:hashIdx], key[:ownerIdx-2]
+						mes.MMEvents <- event.GenericEvent{Object: &v1.PartialObjectMetadata{ObjectMeta: v1.ObjectMeta{
+							Name:      predictorName,
+							Namespace: fmt.Sprintf("%s_%s", sourceId, mes.namespace),
+						}}}
+						return
+					}
 				}
+				mes.logger.Info("Ignoring event for unrecognized ModelMesh model",
+					"modelId", key, "eventType", eventType)
 			}
 		})
 
 	// wait until just before returning to set this so we know we didn't have any errors
 	mes.watchedServiceName = serviceName
 	return nil
+}
+
+func ownerIDFromVModelRecord(data []byte) (string, error) {
+	type record struct{ O string } // owner field is called "o"; ignore others
+	vmr := record{}
+	if err := json.Unmarshal(data, &vmr); err != nil {
+		return "", err
+	}
+	return vmr.O, nil
 }
 
 func (mes *ModelMeshEventStream) connectToEtcd(ctx context.Context, secretName string) error {

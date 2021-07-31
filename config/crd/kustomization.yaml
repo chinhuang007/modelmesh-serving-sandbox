@@ -16,8 +16,8 @@
 # It should be run by config/default
 resources:
   # Including creation of Service here for now, will later be done automatically
-  - bases/wmlserving.ai.ibm.com_predictors.yaml
-  - bases/wmlserving.ai.ibm.com_servingruntimes.yaml
+  - bases/serving.kserve.io_predictors.yaml
+  - bases/serving.kserve.io_servingruntimes.yaml
   # +kubebuilder:scaffold:crdkustomizeresource
 
 #patchesStrategicMerge:

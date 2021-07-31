@@ -18,15 +18,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
 
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/yaml"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
 )
 
 func TestOverlayMockRuntime(t *testing.T) {
@@ -242,113 +239,5 @@ func TestAddPassThroughPodFieldsToDeployment(t *testing.T) {
 		if !cmp.Equal(*d, expectedDeployment) {
 			t.Error("Configured Deployment did not contain expected pod template")
 		}
-	})
-}
-
-func TestConfigureRuntimeAnnotations(t *testing.T) {
-	t.Run("success-no-config-map", func(t *testing.T) {
-		d := &appsv1.Deployment{}
-		sr := &api.ServingRuntime{}
-		m := Deployment{Owner: sr}
-
-		err := m.configureRuntimeAnnotations(d)
-		assert.Nil(t, err)
-
-		assert.Equal(t, d.Spec.Template.Annotations["productName"], "IBM Watson Machine Learning Core")
-		assert.Equal(t, d.ObjectMeta.Annotations["productName"], "IBM Watson Machine Learning Core")
-		assert.Equal(t, d.Spec.Template.Annotations["productMetric"], "FREE")
-		assert.Equal(t, d.ObjectMeta.Annotations["productMetric"], "FREE")
-		assert.Equal(t, d.Spec.Template.Annotations["productID"], "7320f6c142574f48a46f2a8e82736ded")
-		assert.Equal(t, d.ObjectMeta.Annotations["productID"], "7320f6c142574f48a46f2a8e82736ded")
-	})
-	t.Run("fails-no-annotations-in-config-map", func(t *testing.T) {
-		d := &appsv1.Deployment{}
-		sr := &api.ServingRuntime{}
-		configData := map[string]string{"foo": "bar"}
-		configmap := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{Name: "myConfigMap"},
-			Data:       configData,
-		}
-		m := Deployment{
-			Owner:               sr,
-			AnnotationConfigMap: configmap,
-			Log:                 ctrl.Log.WithName("TestRuntime"),
-		}
-
-		err := m.configureRuntimeAnnotations(d)
-		assert.EqualError(t, err, "ConfigMap must contain a key named annotations")
-	})
-	t.Run("success-set-full-annotations", func(t *testing.T) {
-		deploy := &appsv1.Deployment{}
-		sr := &api.ServingRuntime{}
-		configData := map[string]string{
-			"annotations": `|
-         conversionRatio=2:3
-         cloudpakId=12345
-         cloudpakName=CLOUDPAK_NAME`,
-		}
-		configmap := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{Name: "myConfigMap"},
-			Data:       configData,
-		}
-		m := Deployment{
-			Owner:               sr,
-			AnnotationConfigMap: configmap,
-			Log:                 ctrl.Log.WithName("TestRuntime"),
-		}
-
-		err := m.configureRuntimeAnnotations(deploy)
-		assert.Nil(t, err)
-
-		expectedMap := map[string]string{"cloudpakId": "12345", "cloudpakName": "CLOUDPAK_NAME", "conversionRatio": "2:3", "productID": "7320f6c142574f48a46f2a8e82736ded", "productMetric": "FREE", "productName": "IBM Watson Machine Learning Core"}
-		assert.Equal(t, deploy.ObjectMeta.Annotations, expectedMap)
-		assert.Equal(t, deploy.Spec.Template.Annotations, expectedMap)
-	})
-	t.Run("success-set-default-conversionRatio", func(t *testing.T) {
-		deploy := &appsv1.Deployment{}
-		sr := &api.ServingRuntime{}
-		configData := map[string]string{"annotations": "foo=bar"}
-		configmap := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{Name: "myConfigMap"},
-			Data:       configData,
-		}
-		m := Deployment{
-			Owner:               sr,
-			AnnotationConfigMap: configmap,
-			Log:                 ctrl.Log.WithName("TestRuntime"),
-		}
-
-		err := m.configureRuntimeAnnotations(deploy)
-		assert.Nil(t, err)
-
-		expectedMap := map[string]string{"conversionRatio": "1:1", "foo": "bar", "productID": "7320f6c142574f48a46f2a8e82736ded", "productMetric": "FREE", "productName": "IBM Watson Machine Learning Core"}
-		assert.Equal(t, deploy.ObjectMeta.Annotations, expectedMap)
-		assert.Equal(t, deploy.Spec.Template.Annotations, expectedMap)
-	})
-	t.Run("trims-quotes-from-annotations", func(t *testing.T) {
-		deploy := &appsv1.Deployment{}
-		sr := &api.ServingRuntime{}
-		configData := map[string]string{
-			"annotations": `|
-         conversionRatio="2:3"
-         cloudpakId=12345
-         cloudpakName='CLOUDPAK_NAME'`,
-		}
-		configmap := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{Name: "myConfigMap"},
-			Data:       configData,
-		}
-		m := Deployment{
-			Owner:               sr,
-			AnnotationConfigMap: configmap,
-			Log:                 ctrl.Log.WithName("TestRuntime"),
-		}
-
-		err := m.configureRuntimeAnnotations(deploy)
-		assert.Nil(t, err)
-
-		expectedMap := map[string]string{"cloudpakId": "12345", "cloudpakName": "CLOUDPAK_NAME", "conversionRatio": "2:3", "productID": "7320f6c142574f48a46f2a8e82736ded", "productMetric": "FREE", "productName": "IBM Watson Machine Learning Core"}
-		assert.Equal(t, deploy.ObjectMeta.Annotations, expectedMap)
-		assert.Equal(t, deploy.Spec.Template.Annotations, expectedMap)
 	})
 }

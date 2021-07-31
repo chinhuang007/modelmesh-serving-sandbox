@@ -1,13 +1,9 @@
----
-title: Predictor Spec
----
-
 ## Predictor Spec
 
 Here is a complete example of a Predictor spec:
 
 ```yaml
-apiVersion: wmlserving.ai.ibm.com/v1
+apiVersion: serving.kserve.io/v1alpha1
 kind: Predictor
 metadata:
   name: my-mnist-predictor

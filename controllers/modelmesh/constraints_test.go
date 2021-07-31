@@ -16,8 +16,8 @@ package modelmesh
 import (
 	"testing"
 
+	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	api "wmlserving.ai.ibm.com/controller/api/v1"
 )
 
 func TestCalculateLabel(t *testing.T) {
