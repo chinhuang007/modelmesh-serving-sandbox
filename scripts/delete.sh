@@ -78,3 +78,4 @@ cd ..
 kustomize build default | kubectl delete -f - --ignore-not-found=true
 kustomize build runtimes --load-restrictor LoadRestrictionsNone | kubectl delete -f - --ignore-not-found=true
 kubectl delete -f dependencies/quickstart.yaml --ignore-not-found=true
+kubectl delete -f dependencies/fvt.yaml --ignore-not-found=true
