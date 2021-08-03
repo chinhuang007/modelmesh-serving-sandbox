@@ -54,6 +54,16 @@ run_fvt() {
   kubectl config set-context --current --namespace=modelmesh-serving
   kubectl get all
   
+  # Update kustomize
+  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+  mv kustomize /usr/local/bin/kustomize
+
+  # Check if all pods are running - allow 60 retries (10 minutes)
+  ./scripts/install.sh --namespace "$SERVING_NS" --fvt
+  wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
+
+  kubectl get all
+  
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
   #RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
 
@@ -79,3 +89,5 @@ run_fvt || RESULT=$?
 if [[ "$RESULT" -ne 0 ]]; then
   STATUS_MSG=FAILED
 fi
+
+echo "FVT test ${STATUS_MSG}"
