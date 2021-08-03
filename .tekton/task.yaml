@@ -429,7 +429,6 @@ spec:
         - set -ex;
           ls -lrt;
           cd /artifacts && source build.properties;
-          #source ./scripts/deploy/iks/test-fvt.sh;
           source ./$(params.test-script);
 ---
 apiVersion: tekton.dev/v1beta1
