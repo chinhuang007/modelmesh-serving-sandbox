@@ -64,6 +64,7 @@ run_fvt() {
   wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
 
   kubectl get all -n "$SERVING_NS"
+  kubectl get servingruntimes -n "$SERVING_NS"
   
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
   #RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
