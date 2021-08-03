@@ -83,6 +83,7 @@ mv kustomize /usr/local/bin/kustomize
 ./scripts/install.sh --namespace "$SERVING_NS" --fvt
 wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
 ./scripts/delete.sh
+kubectl delete ns "$SERVING_NS"
 
 if [[ $EXIT_CODE -ne 0 ]]
 then

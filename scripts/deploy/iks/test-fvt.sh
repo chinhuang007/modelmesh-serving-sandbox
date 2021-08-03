@@ -51,9 +51,10 @@ run_fvt() {
   shift
 
   echo " =====   run standard fvt   ====="
-  kubectl config set-context --current --namespace=modelmesh-serving
-  kubectl get all
-  
+  #kubectl config set-context --current --namespace=modelmesh-serving
+  kubectl create ns "$SERVING_NS"
+  #kubectl get all
+
   # Update kustomize
   curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
   mv kustomize /usr/local/bin/kustomize
@@ -62,7 +63,7 @@ run_fvt() {
   ./scripts/install.sh --namespace "$SERVING_NS" --fvt
   wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
 
-  kubectl get all
+  kubectl get all -n "$SERVING_NS"
   
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
   #RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
