@@ -68,8 +68,8 @@ run_fvt() {
   cat  ~/.kube/config
   export KUBECONFIG=~/.kube/config
     
-  #go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
-  RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
+  go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m
+  #RUN_STATUS=$(go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m | awk '{ print $1}' | grep PASS)
 
   if [[ "$RUN_STATUS" == "PASS" ]]; then
     REV=0
