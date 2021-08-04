@@ -106,7 +106,7 @@ spec:
         - name: apikey
           value: $(params.apikey)
         - name: image-name
-          value: api-server
+          value: modelmesh-serving
         - name: docker-root
           value: .
         - name: docker-file

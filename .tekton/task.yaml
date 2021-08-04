@@ -279,7 +279,7 @@ spec:
         - set -ex;
           cd /artifacts && source build.properties;
           export BUILD_ARG_LIST="$(params.build-args)";
-          # source scripts/deploy/iks/build-image-dind.sh;
+          source scripts/deploy/iks/build-image-dind.sh;
       volumeMounts:
         - mountPath: /certs/client
           name: dind-certs

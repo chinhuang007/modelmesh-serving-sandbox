@@ -44,7 +44,7 @@ retry() {
   done
 }
 
-# fvt
+# Run fvt tests and look for PASS
 run_fvt() {
   local REV=1
   local RUN_STATUS="FAILED"
@@ -64,9 +64,9 @@ run_fvt() {
   return "$REV"
 }
 
-#retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
-#retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
-#retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
+retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
+retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
+retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 RESULT=0
 STATUS_MSG=PASSED
