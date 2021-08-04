@@ -82,8 +82,8 @@ mv kustomize /usr/local/bin/kustomize
 # Check if all pods are running - allow 60 retries (10 minutes)
 ./scripts/install.sh --namespace "$SERVING_NS" --fvt
 wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
-./scripts/delete.sh
-kubectl delete ns "$SERVING_NS"
+#./scripts/delete.sh
+#kubectl delete ns "$SERVING_NS"
 
 if [[ $EXIT_CODE -ne 0 ]]
 then
