@@ -48,33 +48,21 @@ retry() {
 run_fvt() {
   local REV=1
   local RUN_STATUS="FAILED"
-  shift
+  #shift
 
   echo " =====   run standard fvt   ====="
-  #kubectl config set-context --current --namespace=modelmesh-serving
-  #kubectl create ns "$SERVING_NS"
-  #kubectl get all
-
-  # Update kustomize
-  #curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-  #mv kustomize /usr/local/bin/kustomize
-
-  # Check if all pods are running - allow 60 retries (10 minutes)
-  #./scripts/install.sh --namespace "$SERVING_NS" --fvt
-  #wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
-
   kubectl get all -n "$SERVING_NS"
   export KUBECONFIG=~/.kube/config
     
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m > fvt.out
   cat fvt.out
-  RUN_STATUS=$(cat fvt | awk '{ print $1}' | grep PASS)
+  RUN_STATUS=$(cat fvt.out | awk '{ print $1}' | grep PASS)
 
   if [[ "$RUN_STATUS" == "PASS" ]]; then
     REV=0
-    echo " =====   modelmesh-serving fvt PASSED ====="
-  else
-    echo " =====   modelmesh-serving fvt FAILED ====="
+  #  echo " =====   modelmesh-serving fvt PASSED ====="
+  #else
+  #  echo " =====   modelmesh-serving fvt FAILED ====="
   fi
 
   return "$REV"
