@@ -244,8 +244,8 @@ spec:
         - name: test-commands
           value: |
             kubectl get ns
-            kubectl delete ns $(params.serving-ns) || true
-            kubectl delete job --all -n default || true
+            #kubectl delete ns $(params.serving-ns) || true
+            #kubectl delete job --all -n default || true
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
