@@ -694,7 +694,7 @@ spec:
   - name: task-pvc
     mountPath: /artifacts
   steps:
-    - name: run-iks-script
+    - name: run-cleanup-script
       image: docker.io/aipipeline/pipeline-base-image:1.2
       env:
         - name: IBM_CLOUD_API_KEY

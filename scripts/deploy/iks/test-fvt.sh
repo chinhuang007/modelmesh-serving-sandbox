@@ -48,7 +48,6 @@ retry() {
 run_fvt() {
   local REV=1
   local RUN_STATUS="FAILED"
-  #shift
 
   echo " =====   run standard fvt   ====="
   kubectl get all -n "$SERVING_NS"
@@ -60,17 +59,14 @@ run_fvt() {
 
   if [[ "$RUN_STATUS" == "PASS" ]]; then
     REV=0
-  #  echo " =====   modelmesh-serving fvt PASSED ====="
-  #else
-  #  echo " =====   modelmesh-serving fvt FAILED ====="
   fi
 
   return "$REV"
 }
 
-retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
-retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
-retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
+#retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
+#retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
+#retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
 RESULT=0
 STATUS_MSG=PASSED
