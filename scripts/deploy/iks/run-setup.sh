@@ -46,7 +46,7 @@ fi
   echo "GIT_BRANCH=${GIT_BRANCH}"
   echo "GIT_COMMIT=${GIT_COMMIT}"
   echo "GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}"
-  echo "SOURCE_BUILD_NUMBER=${BUILD_NUMBER}"
+  echo "BUILD_NUMBER=${BUILD_NUMBER}"
   echo "REGION=${REGION}"
   echo "ORG=${ORG}"
   echo "SPACE=${SPACE}"
