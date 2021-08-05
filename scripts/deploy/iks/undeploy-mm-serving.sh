@@ -22,8 +22,6 @@ set -ex
 # - SERVING_NS:                        namespace for modelmesh-serving, defulat: modelmesh-serving
 
 # These env vars should come from the build.properties that `run-setup.sh` generates
-echo "SERVING_KUBERNETES_CLUSTER_NAME=${SERVING_KUBERNETES_CLUSTER_NAME}"
-echo "SERVING_NS=${SERVING_NS}"
 echo "BUILD_NUMBER=${BUILD_NUMBER}"
 echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
 echo "GIT_BRANCH=${GIT_BRANCH}"
@@ -33,6 +31,10 @@ echo "REGION=${REGION}"
 echo "ORG=${ORG}"
 echo "SPACE=${SPACE}"
 echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
+
+# These env vars should come from the pipeline run environment properties
+echo "SERVING_KUBERNETES_CLUSTER_NAME=$SERVING_KUBERNETES_CLUSTER_NAME"
+echo "SERVING_NS=$SERVING_NS"
 
 retry() {
   local max=$1; shift

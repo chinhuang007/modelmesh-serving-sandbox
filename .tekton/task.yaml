@@ -134,7 +134,7 @@ spec:
       args:
         - set -ex;
           cd /artifacts && source build.properties;
-          source ./scripts/deploy/iks/build-image.sh;
+          source ./scripts/deploy/iks/build-image-dind.sh;
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
@@ -201,7 +201,7 @@ spec:
         - set -ex;
           cd /artifacts && source build.properties;
           export BUILD_ARG_LIST="COMMIT_HASH=$(git rev-parse HEAD) DATE=\"$(date -u)\"";
-          source ./scripts/deploy/iks/build-image.sh;
+          source ./scripts/deploy/iks/build-image-dind.sh;
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task

@@ -17,9 +17,7 @@
 # Remove the x if you need no print out of each command
 set -ex
 
-# These env vars should come from the build.properties that `build-image.sh` generates
-echo "REGISTRY_URL=${REGISTRY_URL}"
-echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
+# These env vars should come from the build.properties that `run-setup.sh` generates
 echo "BUILD_NUMBER=${BUILD_NUMBER}"
 echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
 echo "GIT_BRANCH=${GIT_BRANCH}"
@@ -29,6 +27,10 @@ echo "REGION=${REGION}"
 echo "ORG=${ORG}"
 echo "SPACE=${SPACE}"
 echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
+
+# These env vars should come from the pipeline run environment properties
+echo "SERVING_KUBERNETES_CLUSTER_NAME=$SERVING_KUBERNETES_CLUSTER_NAME"
+echo "SERVING_NS=$SERVING_NS"
 
 retry() {
   local max=$1; shift
