@@ -97,38 +97,11 @@ spec:
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
-    - name: build-image
-      taskRef:
-        name: build-images-dnd
-      runAfter:
-        - setup-env
-      params:
-        - name: apikey
-          value: $(params.apikey)
-        - name: image-name
-          value: modelmesh-serving
-        - name: docker-root
-          value: .
-        - name: docker-file
-          value: ""
-        - name: registry-url
-          value: $(params.registry-url)
-        - name: registry-namespace
-          value: $(params.registry-namespace)
-        - name: docker-username
-          value: iamapikey
-        - name: docker-password
-          value: $(params.docker-password)
-        - name: run-task
-          value: artifact
-      workspaces:
-      - name: task-pvc
-        workspace: pipeline-pvc
     - name: deploy
       taskRef:
         name: deploy
       runAfter:
-        - build-image
+        - setup-env
       params:
         - name: apikey
           value: $(params.apikey)
@@ -184,11 +157,38 @@ spec:
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
+    - name: build-image
+      taskRef:
+        name: build-images-dnd
+      runAfter:
+        - undeploy
+      params:
+        - name: apikey
+          value: $(params.apikey)
+        - name: image-name
+          value: modelmesh-serving
+        - name: docker-root
+          value: .
+        - name: docker-file
+          value: ""
+        - name: registry-url
+          value: $(params.registry-url)
+        - name: registry-namespace
+          value: $(params.registry-namespace)
+        - name: docker-username
+          value: iamapikey
+        - name: docker-password
+          value: $(params.docker-password)
+        - name: run-task
+          value: artifact
+      workspaces:
+      - name: task-pvc
+        workspace: pipeline-pvc
     - name: publish-image
       taskRef:
         name: publish-images
       runAfter:
-        - undeploy
+        - build-image
       when:
         - input: $(params.publish-to-dockerhub)
           operator: in
