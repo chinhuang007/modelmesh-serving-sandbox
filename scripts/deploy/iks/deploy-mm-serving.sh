@@ -25,9 +25,9 @@ MAX_RETRIES="${MAX_RETRIES:-5}"
 SLEEP_TIME="${SLEEP_TIME:-10}"
 EXIT_CODE=0
 
-# These env vars should come from the build.properties that `build-image.sh` generates
-echo "REGISTRY_URL=${REGISTRY_URL}"
-echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
+# These env vars should come from the build.properties that `run-setup.sh` generates
+echo "SERVING_KUBERNETES_CLUSTER_NAME=${SERVING_KUBERNETES_CLUSTER_NAME}"
+echo "SERVING_NS=${SERVING_NS}"
 echo "BUILD_NUMBER=${BUILD_NUMBER}"
 echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
 echo "GIT_BRANCH=${GIT_BRANCH}"
@@ -38,15 +38,12 @@ echo "ORG=${ORG}"
 echo "SPACE=${SPACE}"
 echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
 
-pwd
-cat build.properties
-
 C_DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$C_DIR" ]]; then C_DIR="$PWD"; fi
 source "${C_DIR}/helper-functions.sh"
 echo "C_DIR=${C_DIR}"
-echo "SERVING_KUBERNETES_CLUSTER_NAME=$SERVING_KUBERNETES_CLUSTER_NAME"
-echo "SERVING_NS=$SERVING_NS"
+#echo "SERVING_KUBERNETES_CLUSTER_NAME=$SERVING_KUBERNETES_CLUSTER_NAME"
+#echo "SERVING_NS=$SERVING_NS"
 
 retry() {
   local max=$1; shift

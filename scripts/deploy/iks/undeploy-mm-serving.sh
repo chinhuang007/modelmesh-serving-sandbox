@@ -21,12 +21,9 @@ set -ex
 # - SERVING_KUBERNETES_CLUSTER_NAME:   kube cluster name
 # - SERVING_NS:                        namespace for modelmesh-serving, defulat: modelmesh-serving
 
-# These env vars should come from the build.properties that `build-image.sh` generates
+# These env vars should come from the build.properties that `run-setup.sh` generates
 echo "SERVING_KUBERNETES_CLUSTER_NAME=${SERVING_KUBERNETES_CLUSTER_NAME}"
 echo "SERVING_NS=${SERVING_NS}"
-echo "MANIFEST=${MANIFEST}"
-echo "REGISTRY_URL=${REGISTRY_URL}"
-echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
 echo "BUILD_NUMBER=${BUILD_NUMBER}"
 echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
 echo "GIT_BRANCH=${GIT_BRANCH}"
@@ -62,7 +59,4 @@ mv kustomize /usr/local/bin/kustomize
 # Delete CRDs, controller, and built-in runtimes
 ./scripts/delete.sh --namespace "$SERVING_NS"
 
-#kubectl delete ns "$SERVING_NS"
-
 echo "Finished modelmesh-serving undeployment." 
-
