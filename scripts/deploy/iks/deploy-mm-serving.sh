@@ -38,6 +38,8 @@ echo "ORG=${ORG}"
 echo "SPACE=${SPACE}"
 echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
 
+pwd
+cat build.properties
 
 C_DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$C_DIR" ]]; then C_DIR="$PWD"; fi
@@ -82,8 +84,6 @@ mv kustomize /usr/local/bin/kustomize
 # Check if all pods are running - allow 60 retries (10 minutes)
 ./scripts/install.sh --namespace "$SERVING_NS" --fvt
 wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
-#./scripts/delete.sh
-#kubectl delete ns "$SERVING_NS"
 
 if [[ $EXIT_CODE -ne 0 ]]
 then
@@ -92,20 +92,3 @@ then
 fi
 
 echo "Finished modelmesh-serving deployment."
-
-#echo "=========================================================="
-#echo "Copy and prepare artificates for subsequent stages"
-#if [[ -z "$ARCHIVE_DIR" || "$ARCHIVE_DIR" == "." ]]; then
-#  echo -e "Build archive directory contains entire working directory."
-#else
-#  echo -e "Copying working dir into build archive directory: ${ARCHIVE_DIR} "
-#  mkdir -p "$ARCHIVE_DIR"
-#  find . -mindepth 1 -maxdepth 1 -not -path "./$ARCHIVE_DIR" -exec cp -R '{}' "${ARCHIVE_DIR}/" ';'
-#fi
-
-#cp build.properties "${ARCHIVE_DIR}/" || :
-
-#{
-#  echo "SERVING_NS=${SERVING_NS}"
-#  echo "MANIFEST=${MANIFEST}"
-#} >> "${ARCHIVE_DIR}/build.properties"
