@@ -155,9 +155,9 @@ spec:
         workspace: pipeline-pvc
     - name: build-image
       taskRef:
-        name: undeploy
+        name: build-images-dnd
       runAfter:
-        - setup-env
+        - undeploy
       params:
         - name: apikey
           value: $(params.apikey)
