@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE_TAG
 ARG DEV_IMAGE
 
 ###############################################################################
@@ -24,7 +23,7 @@ LABEL image="build"
 
 # Copy the go source
 COPY main.go main.go
-COPY api/ api/
+COPY apis/ apis/
 COPY controllers/ controllers/
 COPY generated/ generated/
 COPY pkg/ pkg/
@@ -35,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 ###############################################################################
 # Stage 2: Copy build assets to create the smallest final runtime image
 ###############################################################################
-FROM registry.access.redhat.com/ubi8/ubi-minimal:${BASE_IMAGE_TAG} AS runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4 AS runtime
 
 ARG USER=2000
 ARG IMAGE_VERSION
@@ -44,8 +43,8 @@ ARG COMMIT_SHA
 LABEL name="modelmesh-serving-controller" \
       version="${IMAGE_VERSION}" \
       release="${COMMIT_SHA}" \
-      summary="Kubernetes controller for Model-Mesh Serving components" \
-      description="Manages lifecycle of Model-Mesh Serving Custom Resources and associated Kubernetes resources"
+      summary="Kubernetes controller for ModelMesh Serving components" \
+      description="Manages lifecycle of ModelMesh Serving Custom Resources and associated Kubernetes resources"
 
 USER ${USER}
 
