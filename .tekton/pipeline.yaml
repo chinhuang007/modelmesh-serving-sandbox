@@ -101,7 +101,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - setup-env
+        - build-image
       params:
         - name: apikey
           value: $(params.apikey)
@@ -161,7 +161,7 @@ spec:
       taskRef:
         name: build-images-dnd
       runAfter:
-        - undeploy
+        - setup-env
       params:
         - name: apikey
           value: $(params.apikey)

@@ -112,12 +112,14 @@ artificat_for_next_stage() {
   grep -v -i password "${ARCHIVE_DIR}/build.properties"
 
   echo "=======================build dev image ================================"
-  source ./scripts/build_devimage.sh
+  #source ./scripts/build_devimage.sh
+  make build.develop
   pwd
   docker images
-  ls -lrt
-  export CI=true
-  docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
+  make test
+  #ls -lrt
+  #export CI=true
+  #docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
 }
 
 check_container_registry() {
