@@ -101,7 +101,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - publish-image
+        - setup-env
       params:
         - name: apikey
           value: $(params.apikey)
@@ -192,7 +192,7 @@ spec:
       taskRef:
         name: build-images-dnd
       runAfter:
-        - setup-env
+        - build-image
       when:
         - input: $(params.publish-to-dockerhub)
           operator: in
