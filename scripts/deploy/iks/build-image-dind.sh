@@ -117,10 +117,12 @@ artificat_for_next_stage() {
   pwd
   docker images
   export CI=true
-  ./scripts/develop.sh make test
-  #ls -lrt
+  ls -lrt
+  #./scripts/develop.sh make test
   #export CI=true
+  docker run --rm -v /artifacts:/workspace '-e CI=true' kserve/modelmesh-controller-develop:latest make test
   #docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
+
 }
 
 check_container_registry() {
