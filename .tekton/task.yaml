@@ -30,6 +30,15 @@ spec:
     - name: archive-dir
       description: archive directory
       default: "."
+    - name: dockerhub-namespace
+      description: docker hub namespace
+    - name: dockerhub-password
+      description: docker hub password
+    - name: dockerhub-username
+      description: docker hub username
+    - name: publish-to-dockerhub
+      description: publish to docker hub or not
+      default: "0"
   workspaces:
   - name: task-pvc
     mountPath: /artifacts
