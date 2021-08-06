@@ -167,26 +167,18 @@ spec:
           value: $(params.apikey)
         - name: image-name
           value: modelmesh-serving
-        - name: docker-root
-          value: .
-        - name: docker-file
-          value: ""
-        - name: registry-url
-          value: $(params.registry-url)
-        - name: registry-namespace
-          value: $(params.registry-namespace)
         - name: docker-username
           value: iamapikey
         - name: docker-password
           value: $(params.docker-password)
         - name: run-task
-          value: artifact
+          value: build
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
     - name: publish-image
       taskRef:
-        name: publish-images
+        name: build-images-dnd
       runAfter:
         - build-image
       when:
@@ -201,10 +193,6 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: serving-ns
           value: $(params.serving-ns)
-        - name: registry-url
-          value: $(params.registry-url)
-        - name: registry-namespace
-          value: $(params.registry-namespace)
         - name: docker-username
           value: $(params.docker-username)
         - name: docker-password
@@ -213,12 +201,10 @@ spec:
           value: $(params.dockerhub-username)
         - name: dockerhub-password
           value: $(params.dockerhub-password)
-        - name: image-tag
-          value: $(params.image-tag)
         - name: dockerhub-namespace
           value: $(params.dockerhub-namespace)
-        - name: images
-          value: $(params.images)
+        - name: run-task
+          value: build_push          
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
