@@ -116,7 +116,8 @@ artificat_for_next_stage() {
   make build.develop
   pwd
   docker images
-  make test
+  export CI=true
+  ./scripts/develop.sh make test
   #ls -lrt
   #export CI=true
   #docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
