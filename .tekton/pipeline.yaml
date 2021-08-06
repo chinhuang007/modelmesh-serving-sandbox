@@ -109,7 +109,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - setup-env
+        - publish-image
       params:
         - name: apikey
           value: $(params.apikey)
@@ -192,7 +192,7 @@ spec:
       taskRef:
         name: build-images-dnd
       runAfter:
-        - build-image
+        - setup-env
       when:
         - input: $(params.publish-to-dockerhub)
           operator: in
@@ -213,6 +213,14 @@ spec:
           value: $(params.registry-namespace)                    
         - name: docker-password
           value: $(params.docker-password)
+        - name: dockerhub-username
+          value: $(params.dockerhub-username)
+        - name: dockerhub-password
+          value: $(params.dockerhub-password)
+        - name: dockerhub-namespace
+          value: $(params.dockerhub-namespace)
+        - name: publish-tag
+          value: $(params.image-tag)
         - name: run-task
           value: build_push          
       workspaces:

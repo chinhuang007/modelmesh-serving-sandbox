@@ -63,6 +63,9 @@ build_image() {
 push_image() {
   echo "=======================Push image to Docker Hub==============================="
   # login dockerhub
+  echo "$DOCKERHUB_USERNAME"
+  echo "$DOCKERHUB_NAMESPACE"
+  echo "${PUBLISH_TAG}
   set +x
   docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
   set -x
