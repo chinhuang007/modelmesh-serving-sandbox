@@ -114,8 +114,11 @@ artificat_for_next_stage() {
   echo "=======================build dev image ================================"
   #source ./scripts/build_devimage.sh
   ls -lrt
-  make build.develop && make build
+  make build.develop
   docker images
+  ls -lrt
+  make build
+
   #./scripts/develop.sh make test
   #export CI=true
   #docker run --rm kserve/modelmesh-controller-develop:latest ls -lrt
