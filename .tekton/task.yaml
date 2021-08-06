@@ -216,6 +216,12 @@ spec:
     - name: docker-root
       description: root directory for docker
       default: .
+    - name: docker-file
+      description: dockerfile
+    - name: registry-url
+      description: container registry url
+    - name: registry-namespace
+      description: the ibmcloud registry namespace
     - name: docker-username
       description: for ibm container registry
       default: iamapikey
