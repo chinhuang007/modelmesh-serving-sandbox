@@ -197,10 +197,6 @@ spec:
       params:
         - name: apikey
           value: $(params.apikey)
-        - name: kubernetes-cluster
-          value: $(params.kubernetes-cluster)
-        - name: serving-ns
-          value: $(params.serving-ns)
         - name: image-name
           value: modelmesh-serving
         - name: docker-root
@@ -211,16 +207,6 @@ spec:
           value: $(params.registry-url)
         - name: registry-namespace
           value: $(params.registry-namespace)                    
-        - name: docker-username
-          value: $(params.docker-username)
-        - name: docker-password
-          value: $(params.docker-password)
-        - name: dockerhub-username
-          value: $(params.dockerhub-username)
-        - name: dockerhub-password
-          value: $(params.dockerhub-password)
-        - name: dockerhub-namespace
-          value: $(params.dockerhub-namespace)
         - name: run-task
           value: build_push          
       workspaces:
