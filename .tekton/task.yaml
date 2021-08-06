@@ -30,14 +30,6 @@ spec:
     - name: archive-dir
       description: archive directory
       default: "."
-    - name: dockerhub-namespace
-      description: docker hub namespace
-    - name: dockerhub-password
-      description: docker hub password
-    - name: dockerhub-username
-      description: docker hub username
-    - name: publish-tag
-      description: image publish tag
   workspaces:
   - name: task-pvc
     mountPath: /artifacts
@@ -65,14 +57,6 @@ spec:
           value: $(params.revision)
         - name: REGISTER_NAMESPACE
           value: $(params.registry-namespace)
-        - name: DOCKERHUB_USERNAME
-          value: $(params.dockerhub-username)
-        - name: DOCKERHUB_TOKEN
-          value: $(params.dockerhub-password)
-        - name: DOCKERHUB_NAMESPACE
-          value: $(params.dockerhub-namespace)
-        - name: PUBLISH_TAG
-          value: $(params.publish-tag)
         - name: BUILD_NUMBER
           valueFrom:
             fieldRef:
