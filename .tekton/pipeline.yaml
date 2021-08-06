@@ -101,7 +101,7 @@ spec:
       taskRef:
         name: deploy
       runAfter:
-        - build-image
+        - setup-env
       params:
         - name: apikey
           value: $(params.apikey)
@@ -113,10 +113,6 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: serving-ns
           value: $(params.serving-ns)
-        # - name: tekton-version
-        #   value: $(params.tekton-version)
-        # - name: tekton-ns
-        #   value: $(params.tekton-ns)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
@@ -159,7 +155,7 @@ spec:
         workspace: pipeline-pvc
     - name: build-image
       taskRef:
-        name: build-images-dnd
+        name: undeploy
       runAfter:
         - setup-env
       params:

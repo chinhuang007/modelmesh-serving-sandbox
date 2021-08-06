@@ -44,30 +44,14 @@ retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP
 # Build image                                                                        #
 ######################################################################################
 build_image() {
-  echo "=========================================================="
-  echo "Copy and prepare artificates for subsequent stages"
+  echo "=======================Build modelmesh controller image======================="
+  # Will build develop and then runtime images.
 
-  echo "Checking archive dir presence"
-  if [[ -z "$ARCHIVE_DIR" || "$ARCHIVE_DIR" == "." ]]; then
-    echo -e "Build archive directory contains entire working directory."
-  else
-    echo -e "Copying working dir into build archive directory: ${ARCHIVE_DIR} "
-    mkdir -p "$ARCHIVE_DIR"
-    find . -mindepth 1 -maxdepth 1 -not -path "./${ARCHIVE_DIR}" -exec cp -R '{}' "${ARCHIVE_DIR}/" ';'
-  fi
-
-  # Persist env variables into a properties file (build.properties) so that all pipeline stages consuming this
-  # build as input and configured with an environment properties file valued 'build.properties'
-  # will be able to reuse the env variables in their job shell scripts.
-
-  # If already defined build.properties from prior build job, append to it.
-  cp build.properties "${ARCHIVE_DIR}/" || :
-
-  echo "=======================Build dev image ================================"
-  ls -lrt
+  echo "==============================Build dev image ================================"
   make build.develop
   docker images
-  echo "=======================Build runtime image ================================"
+  docker inspect "kserve/modelmesh-controller-develop:latest"
+  echo "==========================Build runtime image ================================"
   make build
   docker images
   docker inspect "kserve/modelmesh-controller:latest"
@@ -77,7 +61,7 @@ build_image() {
 # Push image to Docker Hub                                                           #
 ######################################################################################
 push_image() {
-  echo "=======================Push image ================================"  
+  echo "=======================Push image to Docker Hub==============================="  
 }
 case "$RUN_TASK" in
   "build")
