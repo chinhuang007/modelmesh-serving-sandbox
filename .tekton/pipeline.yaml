@@ -94,6 +94,14 @@ spec:
           value: $(params.region)
         - name: space
           value: $(params.space)
+        - name: dockerhub-username
+          value: $(params.dockerhub-username)
+        - name: dockerhub-password
+          value: $(params.dockerhub-password)
+        - name: dockerhub-namespace
+          value: $(params.dockerhub-namespace)
+        - name: publish-tag
+          value: $(params.publish-tag)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
