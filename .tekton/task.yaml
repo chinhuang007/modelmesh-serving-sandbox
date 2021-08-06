@@ -126,6 +126,14 @@ spec:
           value: $(params.run-task)
         - name: ARCHIVE_DIR
           value: $(params.archive-dir)
+        - name: DOCKERHUB_USERNAME
+          value: $(params.dockerhub-username)
+        - name: DOCKERHUB_TOKEN
+          value: $(params.dockerhub-password)
+        - name: DOCKERHUB_NAMESPACE
+          value: $(params.dockerhub-namespace)
+        - name: PUBLISH_TAG
+          value: $(params.publish-tag)
         - name: BUILD_NUMBER
           valueFrom:
             fieldRef:

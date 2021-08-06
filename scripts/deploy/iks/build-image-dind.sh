@@ -61,7 +61,13 @@ build_image() {
 # Push image to Docker Hub                                                           #
 ######################################################################################
 push_image() {
-  echo "=======================Push image to Docker Hub==============================="  
+  echo "=======================Push image to Docker Hub==============================="
+  # login dockerhub
+  set +x
+  docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
+  set -x
+  docker tag "kserve/modelmesh-controller:latest" "${DOCKERHUB_NAMESPACE}/modelmesh-controller:${PUBLISH_TAG}"
+  docker push "${DOCKERHUB_NAMESPACE}/modelmesh-controller:${PUBLISH_TAG}"
 }
 case "$RUN_TASK" in
   "build")
