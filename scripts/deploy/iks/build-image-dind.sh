@@ -114,15 +114,14 @@ artificat_for_next_stage() {
   echo "=======================build dev image ================================"
   #source ./scripts/build_devimage.sh
   make build.develop
-  pwd
+  make build
   docker images
-  export CI=true
   ls -lrt
   #./scripts/develop.sh make test
   #export CI=true
   docker run --rm kserve/modelmesh-controller-develop:latest ls -lrt
-  docker run --rm -v /artifacts:/workspace '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
-  docker run --rm -v /artifacts:/workspace '-e CI=true' kserve/modelmesh-controller-develop:latest make test
+  #docker run --rm -v /artifacts:/workspace '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
+  #docker run --rm -v /artifacts:/workspace '-e CI=true' kserve/modelmesh-controller-develop:latest make test
   #docker run --rm -v /artifacts:/workspace -v /artifacts/.bash_history:/workspace/.bash_history '-e CI=true' kserve/modelmesh-controller-develop:latest ls -lrt
 
 }
