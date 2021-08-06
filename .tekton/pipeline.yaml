@@ -183,6 +183,14 @@ spec:
           value: iamapikey
         - name: docker-password
           value: $(params.docker-password)
+        - name: dockerhub-username
+          value: $(params.dockerhub-username)
+        - name: dockerhub-password
+          value: $(params.dockerhub-password)
+        - name: dockerhub-namespace
+          value: $(params.dockerhub-namespace)
+        - name: publish-tag
+          value: $(params.image-tag)
         - name: run-task
           value: build
       workspaces:
