@@ -207,6 +207,8 @@ spec:
           value: $(params.registry-url)
         - name: registry-namespace
           value: $(params.registry-namespace)                    
+        - name: docker-password
+          value: $(params.docker-password)
         - name: run-task
           value: build_push          
       workspaces:
