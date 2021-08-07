@@ -34,11 +34,6 @@ spec:
       description: username for docker hub
     - name: dockerhub-password
       description: dockerhub password/token
-    - name: tekton-version
-      description: tekton version
-    - name: tekton-ns
-      description: tekton namespace
-      default: tekton-pipeline
     - name: kubernetes-cluster
       description: cluster name
     - name: serving-ns
@@ -109,10 +104,6 @@ spec:
           value: $(params.org)
         - name: space
           value: $(params.space)
-        - name: tekton-version
-          value: $(params.tekton-version)
-        - name: tekton-ns
-          value: $(params.tekton-ns)
         - name: kubernetes-cluster
           value: $(params.kubernetes-cluster)
         - name: serving-ns

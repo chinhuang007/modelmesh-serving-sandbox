@@ -8,7 +8,7 @@ spec:
       description: the git repo
     - name: revision
       description: the revision
-      default: master
+      default: main
     - name: apikey
       description: the ibmcloud api key
     - name: registry-url
@@ -33,14 +33,9 @@ spec:
       description: region
     - name: space
       description: space
-    - name: tekton-version
-      description: tekton version
-    - name: tekton-ns
-      description: tekton namespace
-      default: tekton-pipeline
     - name: serving-ns
-      description: kubeflow namespace
-      default: kubeflow
+      description: modelmesh serving namespace
+      default: modelmesh-serving
     - name: kubernetes-cluster
       description: cluster name
     - name: slack-webhook
@@ -57,7 +52,7 @@ spec:
       default: "nightly"
     - name: dockerhub-namespace
       description: dockerhub namespace
-      default: aipipeline
+      default: kserve
   workspaces:
   - name: pipeline-pvc
   tasks:

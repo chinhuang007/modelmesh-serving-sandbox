@@ -349,11 +349,6 @@ spec:
     - name: serving-ns
       description: kubeflow namespace
       default: modelmesh-serving
-    # - name: tekton-version
-    #   description: tekton version
-    # - name: tekton-ns
-    #   description: tekton namespace
-    #   default: tekton-pipeline
     - name: docker-username
       description: for ibm container registry
       default: iamapikey
