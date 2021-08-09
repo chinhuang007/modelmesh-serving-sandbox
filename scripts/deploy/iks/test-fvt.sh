@@ -63,6 +63,8 @@ run_fvt || RESULT=$?
 
 if [[ "$RESULT" -ne 0 ]]; then
   STATUS_MSG=FAILED
+  echo "FVT test ${STATUS_MSG}"
+  exit 1
 fi
 
 echo "FVT test ${STATUS_MSG}"
