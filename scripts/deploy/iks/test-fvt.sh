@@ -56,6 +56,7 @@ retry 3 3 ibmcloud login --apikey "${IBM_CLOUD_API_KEY}" --no-region
 retry 3 3 ibmcloud target -r "$REGION" -o "$ORG" -s "$SPACE" -g "$RESOURCE_GROUP"
 retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
 
+echo "this is a test for pr trigger"
 RESULT=0
 STATUS_MSG=PASSED
 
