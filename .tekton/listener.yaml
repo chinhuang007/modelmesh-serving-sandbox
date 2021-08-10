@@ -126,7 +126,7 @@ metadata:
 spec:
   params:
     - name: repository
-      value: "https://github.com/kserve/modelmesh-serving"
+      value: "https://github.com/chinhuang007/modelmesh-serving"
     - name: revision
       value: "main"
 ---
