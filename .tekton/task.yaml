@@ -33,6 +33,11 @@ spec:
     - name: skip-clone
       description: skip git clone
       default: "0"
+    - name: kubernetes-cluster
+      description: cluster name
+    - name: serving-ns
+      description: modelmesh serving namespace
+      default: modelmesh-serving
   workspaces:
   - name: task-pvc
     mountPath: /artifacts
@@ -62,6 +67,11 @@ spec:
           value: $(params.registry-namespace)
         - name: SKIP_CLONE
           value: $(params.skip-clone)
+        - name: KUBERNETES_CLUSTER
+          value: $(params.kubernetes-cluster)
+        - name: SERVING_NS
+          value: $(params.serving-ns)
+      default: modelmesh-serving
         - name: BUILD_NUMBER
           valueFrom:
             fieldRef:
