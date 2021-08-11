@@ -53,6 +53,9 @@ spec:
     - name: dockerhub-namespace
       description: dockerhub namespace
       default: kserve
+    - name: skip-clone
+      description: skip git clone
+      default: "0"
   workspaces:
   - name: pipeline-pvc
   tasks:
