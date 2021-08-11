@@ -72,6 +72,29 @@ push_image() {
   docker tag "kserve/modelmesh-controller:latest" "${DOCKERHUB_NAMESPACE}/modelmesh-controller:${PUBLISH_TAG}"
   docker push "${DOCKERHUB_NAMESPACE}/modelmesh-controller:${PUBLISH_TAG}"
 }
+
+test_image() {
+  echo "=======================Push image to Docker Hub==============================="
+  echo "BUILD_NUMBER=${BUILD_NUMBER}"
+  echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
+  echo "GIT_BRANCH=${GIT_BRANCH}"
+  echo "GIT_COMMIT=${GIT_COMMIT}"
+  echo "GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}"
+  echo "REGION=${REGION}"
+  echo "ORG=${ORG}"
+  echo "SPACE=${SPACE}"
+  echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
+
+  # These env vars should come from the pipeline run environment properties
+  echo "SERVING_KUBERNETES_CLUSTER_NAME=$SERVING_KUBERNETES_CLUSTER_NAME"
+  echo "SERVING_NS=$SERVING_NS"
+
+  retry 3 3 ibmcloud ks cluster config -c "$SERVING_KUBERNETES_CLUSTER_NAME"
+  kubectl create ns "$SERVING_NS"
+
+  wait_for_namespace "$SERVING_NS" "$MAX_RETRIES" "$SLEEP_TIME" || EXIT_CODE=$?
+}
+
 case "$RUN_TASK" in
   "build")
     build_image
@@ -82,7 +105,12 @@ case "$RUN_TASK" in
     push_image
     ;;
 
+  "build_test")
+    build_image
+    test_image
+    ;;
+
   *)
-    echo "please specify RUN_TASK=build|build_push"
+    echo "please specify RUN_TASK=build|build_push|build_test"
     ;;
 esac
