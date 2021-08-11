@@ -66,7 +66,7 @@ spec:
       command: ["/bin/bash", "-c"]
       args:
         - set -ex;
-          cd /artifacts && git clone -q -b $GIT_BRANCH $GIT_URL .;
+          cd /artifacts && ls -lrt && git clone -q -b $GIT_BRANCH $GIT_URL .;
           GIT_COMMIT=$(git rev-parse HEAD);
           source ./scripts/deploy/iks/run-setup.sh;
 ---
