@@ -75,7 +75,7 @@ spec:
           ls -lrt;
           if [[ "$SKIP_CLONE" == "0" ]]; then
             git clone -q -b $GIT_BRANCH $GIT_URL .;
-          fi
+          fi;
           GIT_COMMIT=$(git rev-parse HEAD);
           source ./scripts/deploy/iks/run-setup.sh;
 ---
