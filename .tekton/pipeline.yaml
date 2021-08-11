@@ -80,6 +80,8 @@ spec:
           value: $(params.region)
         - name: space
           value: $(params.space)
+        - name: skip-clone
+          value: $(params.skip-clone)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc

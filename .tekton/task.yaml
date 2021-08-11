@@ -30,6 +30,9 @@ spec:
     - name: archive-dir
       description: archive directory
       default: "."
+    - name: skip-clone
+      description: skip git clone
+      default: "0"
   workspaces:
   - name: task-pvc
     mountPath: /artifacts
@@ -57,6 +60,8 @@ spec:
           value: $(params.revision)
         - name: REGISTER_NAMESPACE
           value: $(params.registry-namespace)
+        - name: SKIP_CLONE
+          value: $(params.skip-clone)
         - name: BUILD_NUMBER
           valueFrom:
             fieldRef:
@@ -66,7 +71,11 @@ spec:
       command: ["/bin/bash", "-c"]
       args:
         - set -ex;
-          cd /artifacts && ls -lrt && git clone -q -b $GIT_BRANCH $GIT_URL .;
+          cd /artifacts;
+          ls -lrt;
+          if [[ "$SKIP_CLONE" == "0" ]]; then
+            git clone -q -b $GIT_BRANCH $GIT_URL .;
+          fi
           GIT_COMMIT=$(git rev-parse HEAD);
           source ./scripts/deploy/iks/run-setup.sh;
 ---
