@@ -23,6 +23,10 @@ ORG=${ORG:-"dev-advo"}
 SPACE=${SPACE:-"dev"}
 RUN_TASK=${RUN_TASK:-"build"}
 
+C_DIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$C_DIR" ]]; then C_DIR="$PWD"; fi
+source "${C_DIR}/helper-functions.sh"
+
 retry() {
   local max=$1; shift
   local interval=$1; shift
