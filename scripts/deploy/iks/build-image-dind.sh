@@ -93,6 +93,31 @@ test_image() {
   kubectl create ns "$SERVING_NS"
 
   wait_for_namespace "$SERVING_NS" "$MAX_RETRIES" "$SLEEP_TIME" || EXIT_CODE=$?
+
+  if [[ $EXIT_CODE -ne 0 ]]
+  then
+    echo "Deploy unsuccessful. \"${SERVING_NS}\" not found."
+    exit $EXIT_CODE
+  fi
+
+  # Update kustomize
+  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+  mv kustomize /usr/local/bin/kustomize
+
+  ./scripts/install.sh --namespace "$SERVING_NS" --fvt
+
+  wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
+
+  if [[ $EXIT_CODE -ne 0 ]]
+  then
+    echo "Deploy unsuccessful. Not all pods running."
+    exit $EXIT_CODE
+  fi
+
+  export KUBECONFIG=~/.kube/config
+    
+  go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m > fvt.out
+  cat fvt.out
 }
 
 case "$RUN_TASK" in
