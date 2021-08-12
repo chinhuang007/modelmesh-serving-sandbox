@@ -23,6 +23,10 @@ ORG=${ORG:-"dev-advo"}
 SPACE=${SPACE:-"dev"}
 RUN_TASK=${RUN_TASK:-"build"}
 
+MAX_RETRIES="${MAX_RETRIES:-5}"
+SLEEP_TIME="${SLEEP_TIME:-10}"
+EXIT_CODE=0
+
 C_DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$C_DIR" ]]; then C_DIR="$PWD"; fi
 source "${C_DIR}/helper-functions.sh"
