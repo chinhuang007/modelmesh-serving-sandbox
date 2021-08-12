@@ -26,6 +26,7 @@ RUN_TASK=${RUN_TASK:-"build"}
 MAX_RETRIES="${MAX_RETRIES:-5}"
 SLEEP_TIME="${SLEEP_TIME:-10}"
 EXIT_CODE=0
+DOCKER_TAG="$(git rev-parse --abbrev-ref HEAD)-$(date +"%Y%m%dT%H%M%S%Z")"
 
 C_DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$C_DIR" ]]; then C_DIR="$PWD"; fi
@@ -60,7 +61,8 @@ build_image() {
   docker images
   docker inspect "kserve/modelmesh-controller-develop:latest"
   echo "==========================Build runtime image ================================"
-  make build
+  #make build
+  ./scripts/build_docker.sh --target runtime --tag ${{ DOCKER_TAG }}
   docker images
   docker inspect "kserve/modelmesh-controller:latest"
 }
@@ -113,6 +115,9 @@ test_image() {
   mv kustomize /usr/local/bin/kustomize
   docker images
 
+  sed -i 's/newTag:.*$/newTag: '"$DOCKER_TAG"'/' config/manager/kustomization.yaml
+  cat config/manager/kustomization.yaml
+  
   # Install modelmesh serving
   ./scripts/install.sh --namespace "$SERVING_NS" --fvt
 
