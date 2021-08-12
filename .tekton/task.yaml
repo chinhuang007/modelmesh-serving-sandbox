@@ -71,7 +71,7 @@ spec:
           value: $(params.kubernetes-cluster)
         - name: SERVING_NS
           value: $(params.serving-ns)
-      default: modelmesh-serving
+          default: modelmesh-serving
         - name: BUILD_NUMBER
           valueFrom:
             fieldRef:
