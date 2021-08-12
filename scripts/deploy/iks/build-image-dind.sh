@@ -116,7 +116,7 @@ test_image() {
   mv kustomize /usr/local/bin/kustomize
   docker images
 
-  sed -i 's/newTag:.*$/newTag: 'kserve\/"$DOCKER_TAG"'/' config/manager/kustomization.yaml
+  sed -i 's/newTag:.*$/newTag: '"$DOCKER_TAG"'/' config/manager/kustomization.yaml
   cat config/manager/kustomization.yaml
   
   # Install modelmesh serving
