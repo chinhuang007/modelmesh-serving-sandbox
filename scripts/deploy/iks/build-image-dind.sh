@@ -111,7 +111,9 @@ test_image() {
   # Update kustomize
   curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
   mv kustomize /usr/local/bin/kustomize
+  docker images
 
+  # Install modelmesh serving
   ./scripts/install.sh --namespace "$SERVING_NS" --fvt
 
   wait_for_pods "$SERVING_NS" 60 "$SLEEP_TIME" || EXIT_CODE=$?
@@ -123,9 +125,17 @@ test_image() {
   fi
 
   export KUBECONFIG=~/.kube/config
-    
+  
+  # Run fvt
   go test -v ./fvt -ginkgo.v -ginkgo.progress -test.timeout 40m > fvt.out
   cat fvt.out
+
+  RUN_STATUS=$(cat fvt.out | awk '{ print $1}' | grep PASS)
+  
+  if [[ "$RUN_STATUS" != "PASS" ]]; then
+    echo "FVT test failed"
+    exit 1
+  fi
 }
 
 case "$RUN_TASK" in
