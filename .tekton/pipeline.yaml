@@ -85,6 +85,10 @@ spec:
           value: $(params.space)
         - name: skip-clone
           value: $(params.skip-clone)
+        - name: kubernetes-cluster
+          value: $(params.kubernetes-cluster)
+        - name: serving-ns
+          value: $(params.serving-ns)
       workspaces:
       - name: task-pvc
         workspace: pipeline-pvc
