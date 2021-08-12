@@ -62,7 +62,7 @@ build_image() {
   docker inspect "kserve/modelmesh-controller-develop:latest"
   echo "==========================Build runtime image ================================"
   #make build
-  ./scripts/build_docker.sh --target runtime --tag ${{ DOCKER_TAG }}
+  ./scripts/build_docker.sh --target runtime --tag $DOCKER_TAG
   docker images
   docker inspect "kserve/modelmesh-controller:latest"
 }
