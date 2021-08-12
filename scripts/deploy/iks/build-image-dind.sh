@@ -61,6 +61,7 @@ build_image() {
   docker images
   docker inspect "kserve/modelmesh-controller-develop:latest"
   echo "==========================Build runtime image ================================"
+  echo $DOCKER_TAG
   #make build
   ./scripts/build_docker.sh --target runtime --tag $DOCKER_TAG
   docker images
@@ -84,7 +85,7 @@ push_image() {
 }
 
 test_image() {
-  echo "=======================Push image to Docker Hub==============================="
+  echo "=======================Test using the new image==============================="
   echo "BUILD_NUMBER=${BUILD_NUMBER}"
   echo "ARCHIVE_DIR=${ARCHIVE_DIR}"
   echo "GIT_BRANCH=${GIT_BRANCH}"
@@ -115,7 +116,7 @@ test_image() {
   mv kustomize /usr/local/bin/kustomize
   docker images
 
-  sed -i 's/newTag:.*$/newTag: '"$DOCKER_TAG"'/' config/manager/kustomization.yaml
+  sed -i 's/newTag:.*$/newTag: 'kserve\/"$DOCKER_TAG"'/' config/manager/kustomization.yaml
   cat config/manager/kustomization.yaml
   
   # Install modelmesh serving
