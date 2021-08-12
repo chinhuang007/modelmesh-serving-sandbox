@@ -67,7 +67,7 @@ spec:
           value: $(params.registry-namespace)
         - name: SKIP_CLONE
           value: $(params.skip-clone)
-        - name: KUBERNETES_CLUSTER
+        - name: SERVING_KUBERNETES_CLUSTER_NAME
           value: $(params.kubernetes-cluster)
         - name: SERVING_NS
           value: $(params.serving-ns)

@@ -36,7 +36,7 @@ fi
   echo "ORG=${ORG}"
   echo "SPACE=${SPACE}"
   echo "RESOURCE_GROUP=${RESOURCE_GROUP}"
-  echo "KUBERNETES_CLUSTER=${KUBERNETES_CLUSTER}"
+  echo "SERVING_KUBERNETES_CLUSTER_NAME=${SERVING_KUBERNETES_CLUSTER_NAME}"
   echo "SERVING_NS=${SERVING_NS}"
 } >> "${ARCHIVE_DIR}/build.properties"
 grep -v -i password "${ARCHIVE_DIR}/build.properties"
