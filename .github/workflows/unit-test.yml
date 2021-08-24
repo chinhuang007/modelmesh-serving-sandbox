@@ -16,8 +16,12 @@ jobs:
         curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
         ibmcloud update
         ibmcloud -v
-        ./scripts/build_devimage.sh
+        #./scripts/build_devimage.sh
     - name: Run unit test
       run: |
         export CI=true
-        ./scripts/develop.sh make test
+        ibmcloud login --apikey ${{ APIKEY }} --no-region
+        ibmcloud target -r ${{ REGION }} -o ${{ ORGANIZATION }} -s ${{ SPACE }} -g default
+        ibmcloud ks cluster config -c ${{ CLUSTER_NAME }}
+        kubectl get ns
+        #        ./scripts/develop.sh make test
