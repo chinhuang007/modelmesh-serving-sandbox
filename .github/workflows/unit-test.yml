@@ -19,5 +19,5 @@ jobs:
         ./scripts/build_devimage.sh
     - name: Run unit test
       run: |
-        CI=true
+        export CI=true
         ./scripts/develop.sh make test
