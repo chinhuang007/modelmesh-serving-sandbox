@@ -1,8 +1,6 @@
 name: Unit Test
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]        
 
@@ -15,6 +13,9 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build develop image
       run: |
+        curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+        ibmcloud update
+        ibmcloud -v
         ./scripts/build_devimage.sh
     - name: Run unit test
       run: |
