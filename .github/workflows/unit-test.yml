@@ -11,13 +11,50 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build develop image
+    - name: Build image
       run: |
         curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
         ibmcloud update
         ibmcloud -v
+        ibmcloud plugin install container-service
         ./scripts/build_devimage.sh
     - name: Run unit test
       run: |
         CI=true
-        ./scripts/develop.sh make test
+        echo "IMAGE_TAG=$(date +'%Y%m%dT%H%M%S%Z')" >> $GITHUB_ENV
+        #./scripts/develop.sh make test
+    - name: Install fvt
+      run: |
+        ibmcloud login --apikey ${{ secrets.APIKEY }} --no-region > nul
+        ibmcloud target -r ${{ secrets.REGION }} -o ${{ secrets.ORGANIZATION }} -s ${{ secrets.SPACE }} -g default > nul
+        ibmcloud ks cluster config -c ${{ secrets.CLUSTER_NAME }}
+        max=60
+        i=0
+        while [[ $i -lt $max ]]
+        do
+            if [[ -z $(kubectl get ns | grep modelmesh-serving) ]]
+            then
+              break
+            else
+              sleep 60
+              i=$((i+1))
+              if [[ $i -eq $max ]]
+              then
+                kubectl delete ns modelmesh-serving
+              fi
+            fi
+        done
+        echo $IMAGE_TAG
+        echo $env.IMAGE_TAG
+        ./scripts/build_docker.sh --target runtime --tag ${{ env.IMAGE_TAG }}
+        kubectl create ns modelmesh-serving
+
+        sed -i 's/newTag:.*$/newTag: '"${{ env.IMAGE_TAG }}"'/' config/manager/kustomization.yaml
+        ./scripts/install.sh --namespace modelmesh-serving --fvt
+    - name: Run FVTs
+      run: |
+        echo "make fvt"
+        make fvt
+    - name: Delete namespace
+      run: |
+        kubectl delete ns modelmesh-serving
